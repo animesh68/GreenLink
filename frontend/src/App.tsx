@@ -4,6 +4,7 @@ import { MapContainer } from './components/Map/MapContainer'
 import { InfoPanel } from './components/InfoPanel'
 import { PlanningPanel } from './components/PlanningPanel'
 import { ScenarioModal } from './components/ScenarioModal'
+import { GuideModal } from './components/GuideModal'
 import {
   fetchHealth,
   fetchStudyArea,
@@ -52,6 +53,7 @@ export function App() {
   const [isOptimizing, setIsOptimizing] = useState<boolean>(false)
   const [isComparing, setIsComparing] = useState<boolean>(false)
   const [showScenarioModal, setShowScenarioModal] = useState<boolean>(false)
+  const [showGuideModal, setShowGuideModal] = useState<boolean>(false)
   const [lastOptimizedBudget, setLastOptimizedBudget] = useState<number>(50000000)
   const [lastOptimizedProfile, setLastOptimizedProfile] = useState<string>('connectivity_first')
 
@@ -238,6 +240,7 @@ export function App() {
       <Header
         isBackendLive={isBackendLive}
         backendVersion={health?.version || '0.1.0'}
+        onOpenGuide={() => setShowGuideModal(true)}
       />
 
       {/* 2. Main Content Area */}
@@ -322,7 +325,19 @@ export function App() {
         onClose={() => setShowScenarioModal(false)}
         onApplyPlan={handleApplyScenarioPlan}
       />
+
+      {/* 5. Judge & Evaluator Demonstration Guide Modal */}
+      <GuideModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+        onRunQuickDemo={(budget, prof) => {
+          setBudgetInr(budget)
+          setProfile(prof)
+          executeOptimization(budget, prof)
+        }}
+      />
     </div>
+
   )
 }
 

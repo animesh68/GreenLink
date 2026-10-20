@@ -2,8 +2,9 @@
 
 **AI-Assisted Geospatial Decision-Support Platform for Urban Green Corridors**
 
-> **Current Phase: Phase 3.1 (Optimization Audit, Scientific Validity & Demo Readiness)**  
-> **Status: Verified Working (29/29 Automated Tests Passing • Clean Vite Build)**
+> **Current Phase: Phase 4 (Hackathon Demo Readiness & Product Polish)**  
+> **Status: Demo Ready • 29/29 Automated Tests Passing • Clean Vite Build**  
+> **Judge Package:** See [`DEMO_GUIDE.md`](DEMO_GUIDE.md) for 90s pitch, 5-min demo script, and computed metrics.
 
 ---
 
@@ -40,7 +41,16 @@
 - Node.js (v18+) and npm
 - Python 3.11 with `uv` or standard `python -m venv`
 
-### Step A: Start the Backend (FastAPI)
+### Option 1: 1-Click PowerShell Launch (Windows Recommended)
+From the project root:
+```powershell
+.\run_dev.ps1
+```
+*Validates prerequisites, starts FastAPI on `:8000`, starts Vite on `:5173`, and opens the browser automatically.*
+
+### Option 2: Manual Startup
+
+#### Step A: Start the Backend (FastAPI)
 ```bash
 cd backend
 

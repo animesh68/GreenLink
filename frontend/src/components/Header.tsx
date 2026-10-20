@@ -1,12 +1,17 @@
 import React from 'react'
-import { Trees, Info } from 'lucide-react'
+import { Trees, Info, HelpCircle } from 'lucide-react'
 
 interface HeaderProps {
   isBackendLive: boolean
   backendVersion: string
+  onOpenGuide?: () => void
 }
 
-export const Header: React.FC<HeaderProps> = ({ isBackendLive, backendVersion }) => {
+export const Header: React.FC<HeaderProps> = ({
+  isBackendLive,
+  backendVersion,
+  onOpenGuide
+}) => {
   return (
     <header className="h-16 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-6 flex items-center justify-between z-20 shrink-0">
       <div className="flex items-center gap-3">
@@ -24,9 +29,23 @@ export const Header: React.FC<HeaderProps> = ({ isBackendLive, backendVersion })
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Judge Demo Guide Trigger */}
+        {onOpenGuide && (
+          <button
+            onClick={onOpenGuide}
+            className="flex items-center gap-1.5 text-xs text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer shadow-sm"
+            title="Open Judge & Evaluator 5-step walkthrough guide"
+            id="judge-guide-btn"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Judge Demo Guide</span>
+            <span className="sm:hidden">Guide</span>
+          </button>
+        )}
+
         {/* Research / Disclaimer Notice */}
-        <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-md border border-slate-700/50">
+        <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-md border border-slate-700/50">
           <Info className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
           <span>Research Decision-Support Tool • South-Central Delhi Study Area</span>
         </div>
@@ -42,3 +61,4 @@ export const Header: React.FC<HeaderProps> = ({ isBackendLive, backendVersion })
     </header>
   )
 }
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import type {
   StudyAreaMetadata,
   GreenSpaceFeature,
@@ -53,9 +53,24 @@ export const InfoPanel: React.FC<InfoPanelProps> = ({
   const [showExcluded, setShowExcluded] = useState<boolean>(false)
   const [expandedRationaleStep, setExpandedRationaleStep] = useState<number | null>(null)
 
+  // Auto-switch to 'plan' when an optimization plan is generated or updated
+  useEffect(() => {
+    if (optimizedPlan) {
+      setActiveTab('plan')
+    }
+  }, [optimizedPlan])
+
+  // Auto-switch to 'anchors' inspector when user clicks an anchor or corridor on the map
+  useEffect(() => {
+    if (selectedFeature || selectedCandidate) {
+      setActiveTab('anchors')
+    }
+  }, [selectedFeature, selectedCandidate])
+
   const meta = optimizedPlan?.metadata
   const obj = optimizedPlan?.objective
   const sec = optimizedPlan?.secondary_metrics
+
 
   return (
     <div className="w-80 md:w-96 bg-slate-900 border-l border-slate-800 flex flex-col h-full overflow-hidden shrink-0 z-10 text-slate-100">
