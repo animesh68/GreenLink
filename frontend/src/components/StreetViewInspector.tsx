@@ -51,13 +51,16 @@ export const StreetViewInspector: React.FC<StreetViewInspectorProps> = ({
 
   const { lat, lng } = getMidpoint()
   const mapillaryToken = import.meta.env.VITE_MAPILLARY_CLIENT_TOKEN
+  const googleMapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
   useEffect(() => {
     if (!isOpen || !corridor) return
 
     if (!mapillaryToken) {
       setImage(null)
-      setStatusMessage('No developer access token configured in environment.')
+      if (!googleMapsKey) {
+        setStatusMessage('No developer access token configured in environment.')
+      }
       return
     }
 
@@ -151,7 +154,34 @@ export const StreetViewInspector: React.FC<StreetViewInspectorProps> = ({
         {loading ? (
           <div className="h-44 rounded-lg border border-dashed border-[#E2DFD2] bg-white flex flex-col items-center justify-center gap-2 text-xs text-[#55665C]">
             <div className="w-5 h-5 border-2 border-[#285943] border-t-transparent rounded-full animate-spin" />
-            <span>Scanning Mapillary imagery near corridor...</span>
+            <span>Scanning street imagery near corridor...</span>
+          </div>
+        ) : googleMapsKey ? (
+          <div className="space-y-2">
+            <div className="rounded-lg overflow-hidden border border-[#E2DFD2] shadow-sm bg-slate-900 h-52">
+              <iframe
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                src={`https://www.google.com/maps/embed/v1/streetview?key=${googleMapsKey}&location=${lat},${lng}&heading=0&pitch=0&fov=80`}
+                title={`Google Street View along ${props.name}`}
+              />
+            </div>
+            <div className="text-[10px] text-[#7E8E84] flex items-center justify-between px-1">
+              <span>Source: Google Maps Embed (Street View)</span>
+              <a
+                href={googleStreetViewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#285943] font-semibold hover:underline flex items-center gap-0.5"
+              >
+                <span>Full Screen</span>
+                <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            </div>
           </div>
         ) : image ? (
           <div className="space-y-2">
@@ -184,39 +214,39 @@ export const StreetViewInspector: React.FC<StreetViewInspectorProps> = ({
           <div className="p-3.5 rounded-lg border border-[#E2DFD2] bg-white space-y-2.5 text-xs text-[#55665C]">
             <div className="flex items-center gap-2 text-[#C28B39] font-semibold text-xs">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>Street Imagery Status</span>
+              <span>Street Imagery Integration</span>
             </div>
 
             <p className="m-0 text-[11px] leading-relaxed">
               {mapillaryToken
                 ? statusMessage
-                : 'Direct embedded imagery requires a Mapillary Client Token (VITE_MAPILLARY_CLIENT_TOKEN). You can inspect this exact road segment directly in external street-level mapping services below:'}
+                : 'Direct embedded street panorama requires a Google Maps API Key (VITE_GOOGLE_MAPS_API_KEY) or Mapillary Token (VITE_MAPILLARY_CLIENT_TOKEN). You can inspect this exact road segment directly in external mapping services below:'}
             </p>
 
             {/* Quick External Actions */}
             <div className="grid grid-cols-1 gap-2 pt-1">
               <a
-                href={mapillaryWebUrl}
+                href={googleStreetViewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-between px-3 py-2 rounded-md bg-[#285943] hover:bg-[#1D4332] text-white font-medium text-xs transition-all shadow-xs"
               >
                 <div className="flex items-center gap-1.5">
-                  <Compass className="w-3.5 h-3.5" />
-                  <span>Open in Mapillary Web</span>
+                  <MapPin className="w-3.5 h-3.5 text-[#86A68A]" />
+                  <span>Inspect in Google Street View</span>
                 </div>
                 <ExternalLink className="w-3 h-3 text-white/80" />
               </a>
 
               <a
-                href={googleStreetViewUrl}
+                href={mapillaryWebUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-between px-3 py-2 rounded-md bg-white hover:bg-[#F7F6F0] text-[#1D2A22] border border-[#E2DFD2] font-medium text-xs transition-all shadow-xs"
               >
                 <div className="flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#C28B39]" />
-                  <span>Open in Google Street View</span>
+                  <Compass className="w-3.5 h-3.5 text-[#C28B39]" />
+                  <span>Inspect in Mapillary Web</span>
                 </div>
                 <ExternalLink className="w-3 h-3 text-[#55665C]" />
               </a>

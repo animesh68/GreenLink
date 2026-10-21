@@ -27,13 +27,61 @@ maplibregl.setWorkerUrl(maplibreWorkerUrl)
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_API_KEY
 
 const BASEMAP_PRESETS = {
+  positron: {
+    id: 'positron',
+    name: 'Carto Positron (Clean GIS)',
+    style: {
+      version: 8,
+      sources: {
+        'carto-positron': {
+          type: 'raster',
+          tiles: [
+            'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+            'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+            'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+          ],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors, © CARTO'
+        }
+      },
+      layers: [
+        {
+          id: 'carto-positron-layer',
+          type: 'raster',
+          source: 'carto-positron',
+          minzoom: 0,
+          maxzoom: 19
+        }
+      ]
+    },
+    type: 'raster'
+  },
   bright: {
     id: 'bright',
-    name: 'Detailed Street',
+    name: 'Detailed Street (OSM)',
     style: MAPTILER_KEY
       ? `https://api.maptiler.com/maps/streets-v4/style.json?key=${MAPTILER_KEY}`
-      : 'https://tiles.openfreemap.org/styles/bright',
-    type: 'vector'
+      : {
+          version: 8,
+          sources: {
+            'osm-raster': {
+              type: 'raster',
+              tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+              tileSize: 256,
+              attribution: '© OpenStreetMap contributors'
+            }
+          },
+          layers: [
+            {
+              id: 'osm-raster-layer',
+              type: 'raster',
+              source: 'osm-raster',
+              minzoom: 0,
+              maxzoom: 19
+            }
+          ]
+        },
+    type: MAPTILER_KEY ? 'vector' : 'raster'
   },
   satellite: {
     id: 'satellite',
@@ -64,12 +112,6 @@ const BASEMAP_PRESETS = {
           ]
         },
     type: 'raster'
-  },
-  positron: {
-    id: 'positron',
-    name: 'Positron Muted',
-    style: 'https://tiles.openfreemap.org/styles/positron',
-    type: 'vector'
   }
 }
 
@@ -88,6 +130,10 @@ interface MapContainerProps {
   onSelectFeature: (feature: GreenSpaceFeature | null) => void
   onSelectCandidate: (candidate: CandidateCorridorFeature | null) => void
   onInspectStreet?: (candidate: CandidateCorridorFeature) => void
+  // User-directed green space selection props:
+  selectedPatchIds?: string[]
+  isSelectionMode?: boolean
+  onTogglePatchSelection?: (patchId: string) => void
 }
 
 export const MapContainer: React.FC<MapContainerProps> = ({
@@ -104,13 +150,16 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   onToggleHeatGrid,
   onSelectFeature,
   onSelectCandidate,
-  onInspectStreet
+  onInspectStreet,
+  selectedPatchIds = [],
+  isSelectionMode = false,
+  onTogglePatchSelection
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const popupRef = useRef<maplibregl.Popup | null>(null)
 
-  const [activeBasemap, setActiveBasemap] = useState<'bright' | 'satellite' | 'positron'>('bright')
+  const [activeBasemap, setActiveBasemap] = useState<'bright' | 'satellite' | 'positron'>('positron')
 
   // Mutable refs to prevent stale closures in MapLibre event handlers
   const greenSpacesRef = useRef(greenSpaces)
@@ -123,6 +172,9 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   const onInspectStreetRef = useRef(onInspectStreet)
   const showCandidatesRef = useRef(showCandidates)
   const showHeatGridRef = useRef(showHeatGrid)
+  const selectedPatchIdsRef = useRef(selectedPatchIds)
+  const isSelectionModeRef = useRef(isSelectionMode)
+  const onTogglePatchSelectionRef = useRef(onTogglePatchSelection)
 
   useEffect(() => {
     greenSpacesRef.current = greenSpaces
@@ -135,6 +187,9 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     onInspectStreetRef.current = onInspectStreet
     showCandidatesRef.current = showCandidates
     showHeatGridRef.current = showHeatGrid
+    selectedPatchIdsRef.current = selectedPatchIds
+    isSelectionModeRef.current = isSelectionMode
+    onTogglePatchSelectionRef.current = onTogglePatchSelection
   }, [
     greenSpaces,
     studyBoundary,
@@ -145,7 +200,10 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     onSelectCandidate,
     onInspectStreet,
     showCandidates,
-    showHeatGrid
+    showHeatGrid,
+    selectedPatchIds,
+    isSelectionMode,
+    onTogglePatchSelection
   ])
 
   // Setup all GeoJSON sources & layers on the map
@@ -399,6 +457,21 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       })
     }
 
+    // Glowing golden-amber selection ring for user-selected green space anchors
+    if (!map.getLayer('green-spaces-selected-ring')) {
+      map.addLayer({
+        id: 'green-spaces-selected-ring',
+        type: 'line',
+        source: 'green-spaces',
+        paint: {
+          'line-color': '#F59E0B',
+          'line-width': 4.5,
+          'line-opacity': 0.95
+        },
+        filter: ['in', 'id', '']
+      })
+    }
+
     // 5. Corridors Hit Area Layer
     if (!map.getLayer('candidate-corridors-hit')) {
       map.addLayer({
@@ -607,8 +680,14 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     map.on('click', 'green-spaces-fill', (e: any) => {
       if (!e.features || e.features.length === 0) return
       const feat = e.features[0] as unknown as GreenSpaceFeature
-      onSelectFeatureRef.current(feat)
-      onSelectCandidateRef.current(null)
+      const pid = feat.properties?.id || (feat as any).id
+
+      if (isSelectionModeRef.current && onTogglePatchSelectionRef.current && pid) {
+        onTogglePatchSelectionRef.current(pid)
+      } else {
+        onSelectFeatureRef.current(feat)
+        onSelectCandidateRef.current(null)
+      }
 
       const props = feat.properties
       const html = `
@@ -750,6 +829,17 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       map.setFilter('corridor-selection-highlight', ['==', 'candidate_id', candId])
     }
 
+    // Selected green spaces rings
+    if (map.getLayer('green-spaces-selected-ring')) {
+      const pids = selectedPatchIdsRef.current || []
+      if (pids.length > 0) {
+        map.setFilter('green-spaces-selected-ring', ['in', 'id', ...pids])
+        map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'visible')
+      } else {
+        map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'none')
+      }
+    }
+
     // Candidate opacity adjustment when plan exists
     if (map.getLayer('candidate-corridors-line')) {
       const hasSelected = (optimizedPlanRef.current?.selected_candidates?.length || 0) > 0
@@ -760,6 +850,29 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       )
     }
   }
+
+  // Sync selected patch rings
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const applySelection = () => {
+      if (map.getLayer('green-spaces-selected-ring')) {
+        if (selectedPatchIds.length > 0) {
+          map.setFilter('green-spaces-selected-ring', ['in', 'id', ...selectedPatchIds])
+          map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'visible')
+        } else {
+          map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'none')
+        }
+      }
+    }
+
+    if (map.isStyleLoaded()) {
+      applySelection()
+    } else {
+      map.once('load', applySelection)
+    }
+  }, [selectedPatchIds])
 
   // Sync candidate corridor layer visibility
   useEffect(() => {

@@ -13,7 +13,8 @@ import {
   fetchCandidateSummary,
   fetchHeatPriorityGrid,
   optimizePlan,
-  compareScenarios
+  compareScenarios,
+  generateUserCorridors
 } from './services/api'
 import type {
   GreenSpaceCollection,
@@ -25,7 +26,9 @@ import type {
   CandidateSummary,
   OptimizationResponse,
   ScenarioComparisonResponse,
-  HeatGridCollection
+  HeatGridCollection,
+  CustomPlanningPoint,
+  UserDirectedPlanningResponse
 } from './types'
 import { AlertCircle, RefreshCw } from 'lucide-react'
 
@@ -39,14 +42,20 @@ export function App() {
   const [heatGrid, setHeatGrid] = useState<HeatGridCollection | null>(null)
   const [selectedFeature, setSelectedFeature] = useState<GreenSpaceFeature | null>(null)
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateCorridorFeature | null>(null)
-  const [showCandidates, setShowCandidates] = useState<boolean>(true)
+  const [showCandidates, setShowCandidates] = useState<boolean>(false) // Default false for clean explore mode
   const [showHeatGrid, setShowHeatGrid] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // 4 Workflow Stages: 'explore' | 'configure' | 'review' | 'compare'
+  // 4 Workflow Stages: 'explore' | 'select' | 'review' | 'compare'
   const [activeStage, setActiveStage] = useState<WorkflowStage>('explore')
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true)
+
+  // User-Directed Planning State
+  const [selectedPatchIds, setSelectedPatchIds] = useState<string[]>([])
+  const [customPoints, setCustomPoints] = useState<CustomPlanningPoint[]>([])
+  const [userCorridors, setUserCorridors] = useState<UserDirectedPlanningResponse | null>(null)
+  const [isGeneratingCorridors, setIsGeneratingCorridors] = useState<boolean>(false)
 
   // Street Imagery Inspector State
   const [inspectingCandidate, setInspectingCandidate] = useState<CandidateCorridorFeature | null>(null)
@@ -67,7 +76,75 @@ export function App() {
     optimizedPlan !== null &&
     (budgetInr !== lastOptimizedBudget || profile !== lastOptimizedProfile)
 
-  // Execute optimization
+  // Initial Data Load
+  const loadData = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      // 1. Health check
+      const healthRes = await fetchHealth()
+      setHealth(healthRes.data)
+      setIsBackendLive(healthRes.isLive)
+
+      // 2. Concurrently fetch study area, green spaces, candidate corridors, summary, and heat grid
+      const [studyRes, greenRes, candRes, summaryRes, heatRes] = await Promise.all([
+        fetchStudyArea(),
+        fetchGreenSpaces(),
+        fetchCandidateCorridors(),
+        fetchCandidateSummary(),
+        fetchHeatPriorityGrid()
+      ])
+
+      setStudyArea(studyRes.data)
+      setGreenSpaces(greenRes.data)
+      setCandidateCorridors(candRes.data)
+      setCandidateSummary(summaryRes.data)
+      setHeatGrid(heatRes.data)
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load geospatial datasets.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  // User-Directed Corridor Generation Action
+  const handleGenerateUserCorridors = useCallback(async () => {
+    if (selectedPatchIds.length + customPoints.length < 2) return
+
+    setIsGeneratingCorridors(true)
+    setError(null)
+
+    try {
+      const result = await generateUserCorridors(
+        selectedPatchIds,
+        customPoints,
+        budgetInr,
+        profile
+      )
+
+      setUserCorridors(result)
+      if (result.optimization_plan) {
+        setOptimizedPlan(result.optimization_plan)
+        setLastOptimizedBudget(budgetInr)
+        setLastOptimizedProfile(profile)
+      }
+
+      setShowCandidates(true)
+      setActiveStage('review')
+    } catch (err: any) {
+      console.error('User corridor generation error:', err)
+      setError(err?.message || 'Failed to generate corridors connecting selected areas.')
+    } finally {
+      setIsGeneratingCorridors(false)
+    }
+  }, [selectedPatchIds, customPoints, budgetInr, profile])
+
+  // Execute optimization (either on user-generated corridors or on benchmark candidate set)
   const executeOptimization = useCallback(
     async (
       targetBudget = budgetInr,
@@ -75,9 +152,27 @@ export function App() {
       autoSwitchStage = true
     ) => {
       setIsOptimizing(true)
+      setError(null)
       try {
-        const result = await optimizePlan(targetBudget, targetProfile)
-        setOptimizedPlan(result)
+        if (selectedPatchIds.length + customPoints.length >= 2) {
+          // Optimize on user-selected network
+          const result = await generateUserCorridors(
+            selectedPatchIds,
+            customPoints,
+            targetBudget,
+            targetProfile
+          )
+          setUserCorridors(result)
+          if (result.optimization_plan) {
+            setOptimizedPlan(result.optimization_plan)
+          }
+        } else {
+          // Optimize on benchmark candidate network
+          const result = await optimizePlan(targetBudget, targetProfile)
+          setOptimizedPlan(result)
+          setShowCandidates(true)
+        }
+
         setLastOptimizedBudget(targetBudget)
         setLastOptimizedProfile(targetProfile)
         if (autoSwitchStage) {
@@ -90,12 +185,13 @@ export function App() {
         setIsOptimizing(false)
       }
     },
-    [budgetInr, profile]
+    [budgetInr, profile, selectedPatchIds, customPoints]
   )
 
   // Execute scenario comparison
   const executeComparison = useCallback(async () => {
     setIsComparing(true)
+    setError(null)
     try {
       const result = await compareScenarios(budgetInr)
       setScenarioComparison(result)
@@ -159,59 +255,38 @@ export function App() {
     URL.revokeObjectURL(briefUrl)
   }
 
-  // Initial Data Load
-  const loadData = async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      // 1. Health check
-      const healthRes = await fetchHealth()
-      setHealth(healthRes.data)
-      setIsBackendLive(healthRes.isLive)
-
-      // 2. Concurrently fetch study area, green spaces, candidate corridors, summary, and heat grid
-      const [studyRes, greenRes, candRes, summaryRes, heatRes] = await Promise.all([
-        fetchStudyArea(),
-        fetchGreenSpaces(),
-        fetchCandidateCorridors(),
-        fetchCandidateSummary(),
-        fetchHeatPriorityGrid()
-      ])
-
-      setStudyArea(studyRes.data)
-      setGreenSpaces(greenRes.data)
-      setCandidateCorridors(candRes.data)
-      setCandidateSummary(summaryRes.data)
-      setHeatGrid(heatRes.data)
-
-      // 3. Automatically run initial Phase 3 optimization at ₹5 Crore
-      try {
-        const initialPlan = await optimizePlan(50000000, 'connectivity_first')
-        setOptimizedPlan(initialPlan)
-        setLastOptimizedBudget(50000000)
-        setLastOptimizedProfile('connectivity_first')
-      } catch (optErr) {
-        console.warn('Initial optimization run error:', optErr)
-      }
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load geospatial datasets.')
-    } finally {
-      setLoading(false)
-    }
+  // Patch Selection Handlers
+  const handleTogglePatchSelection = (patchId: string) => {
+    setSelectedPatchIds((prev) =>
+      prev.includes(patchId) ? prev.filter((id) => id !== patchId) : [...prev, patchId]
+    )
   }
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  const handleSelectAllPatches = () => {
+    if (!greenSpaces) return
+    const allIds = greenSpaces.features.map((f) => f.properties.id || (f as any).id)
+    setSelectedPatchIds(allIds)
+  }
+
+  const handleClearPatchSelection = () => {
+    setSelectedPatchIds([])
+    setCustomPoints([])
+    setUserCorridors(null)
+  }
+
+  const handleAddCustomPoint = (pt: CustomPlanningPoint) => {
+    setCustomPoints((prev) => [...prev, pt])
+  }
+
+  const handleRemoveCustomPoint = (id: string) => {
+    setCustomPoints((prev) => prev.filter((p) => p.id !== id))
+  }
 
   const handleSelectFeature = (feat: GreenSpaceFeature | null) => {
     setSelectedFeature(feat)
     if (feat) {
       setSelectedCandidate(null)
-      // Open sidebar to inspector if closed
       setIsSidebarOpen(true)
-      setActiveStage('explore')
     }
   }
 
@@ -220,10 +295,6 @@ export function App() {
     if (cand) {
       setSelectedFeature(null)
       setIsSidebarOpen(true)
-      // If currently on explore or review, stay on stage
-      if (activeStage !== 'explore' && activeStage !== 'review') {
-        setActiveStage('explore')
-      }
     }
   }
 
@@ -232,9 +303,12 @@ export function App() {
     setSelectedCandidate(null)
   }
 
+  const activeCandidatesGeojson =
+    userCorridors?.candidate_corridors_geojson || candidateCorridors
+
   const handleSelectCandidateById = (candidateId: string) => {
-    if (!candidateCorridors) return
-    const match = candidateCorridors.features.find(
+    if (!activeCandidatesGeojson) return
+    const match = activeCandidatesGeojson.features.find(
       (f) => f.properties.candidate_id === candidateId
     )
     if (match) {
@@ -266,25 +340,27 @@ export function App() {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[#F7F6F0] text-[#1D2A22] overflow-hidden select-none">
-      {/* 1. GIS Workstation Top Header with 4-Stage Workflow Switcher */}
+      {/* 1. Top Header with 4-Stage Workflow */}
       <WorkstationHeader
         activeStage={activeStage}
         onStageChange={(stage) => setActiveStage(stage)}
         isBackendLive={isBackendLive}
         backendVersion={health?.version || '0.1.0'}
+        selectedCount={selectedPatchIds.length + customPoints.length}
+        hasCandidateRoutes={Boolean(userCorridors && userCorridors.total_candidate_routes > 0)}
         hasPlan={optimizedPlan !== null}
         isStale={isStale}
         onOpenGuide={() => setShowGuideModal(true)}
       />
 
-      {/* 2. Main Workstation Body: Collapsible Sidebar + Dominant Map + Optional Street Inspector */}
+      {/* 2. Main Workstation Body: Collapsible Sidebar + Dominant Map + Street Inspector */}
       <div className="flex-1 flex flex-row relative overflow-hidden">
         {/* Loading Overlay */}
         {loading && (
           <div className="absolute inset-0 z-40 bg-white/80 backdrop-blur-xs flex flex-col items-center justify-center gap-3">
             <RefreshCw className="w-8 h-8 text-[#285943] animate-spin" />
             <div className="text-sm font-semibold text-[#1D2A22]">
-              Loading South-Central Delhi Geospatial Layers & Optimizer...
+              Loading South-Central Delhi Geospatial Layers...
             </div>
           </div>
         )}
@@ -295,10 +371,10 @@ export function App() {
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{error}</span>
             <button
-              onClick={loadData}
+              onClick={() => setError(null)}
               className="ml-2 underline font-bold text-rose-950 hover:text-rose-700 cursor-pointer"
             >
-              Retry
+              Dismiss
             </button>
           </div>
         )}
@@ -322,6 +398,19 @@ export function App() {
           onClearSelection={handleClearSelection}
           onSelectCandidateById={handleSelectCandidateById}
           onInspectStreet={(cand) => setInspectingCandidate(cand)}
+          allPatches={greenSpaces?.features || []}
+          selectedPatchIds={selectedPatchIds}
+          onTogglePatchSelection={handleTogglePatchSelection}
+          onSelectAllPatches={handleSelectAllPatches}
+          onClearPatchSelection={handleClearPatchSelection}
+          customPoints={customPoints}
+          onAddCustomPoint={handleAddCustomPoint}
+          onRemoveCustomPoint={handleRemoveCustomPoint}
+          onGenerateCorridors={handleGenerateUserCorridors}
+          isGeneratingCorridors={isGeneratingCorridors}
+          userCorridorCount={userCorridors?.total_candidate_routes || 0}
+          userCorridorLengthKm={userCorridors?.total_candidate_length_km || 0}
+          userCorridorCostInr={userCorridors?.total_candidate_cost_inr || 0}
           budgetInr={budgetInr}
           profile={profile}
           isOptimizing={isOptimizing}
@@ -342,7 +431,7 @@ export function App() {
           <MapContainer
             greenSpaces={greenSpaces}
             studyBoundary={studyArea?.boundary_geojson || null}
-            candidateCorridors={candidateCorridors}
+            candidateCorridors={activeCandidatesGeojson}
             heatGrid={heatGrid}
             optimizedPlan={optimizedPlan}
             selectedFeature={selectedFeature}
@@ -354,6 +443,9 @@ export function App() {
             onSelectFeature={handleSelectFeature}
             onSelectCandidate={handleSelectCandidate}
             onInspectStreet={(cand) => setInspectingCandidate(cand)}
+            selectedPatchIds={selectedPatchIds}
+            isSelectionMode={activeStage === 'select'}
+            onTogglePatchSelection={handleTogglePatchSelection}
           />
         </div>
 

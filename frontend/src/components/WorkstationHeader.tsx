@@ -8,13 +8,15 @@ import {
   HelpCircle
 } from 'lucide-react'
 
-export type WorkflowStage = 'explore' | 'configure' | 'review' | 'compare'
+export type WorkflowStage = 'explore' | 'select' | 'review' | 'compare'
 
 interface WorkstationHeaderProps {
   activeStage: WorkflowStage
   onStageChange: (stage: WorkflowStage) => void
   isBackendLive: boolean
   backendVersion: string
+  selectedCount?: number
+  hasCandidateRoutes?: boolean
   hasPlan: boolean
   isStale: boolean
   onOpenGuide: () => void
@@ -25,6 +27,8 @@ export const WorkstationHeader: React.FC<WorkstationHeaderProps> = ({
   onStageChange,
   isBackendLive,
   backendVersion,
+  selectedCount = 0,
+  hasCandidateRoutes = false,
   hasPlan,
   isStale,
   onOpenGuide
@@ -38,21 +42,27 @@ export const WorkstationHeader: React.FC<WorkstationHeaderProps> = ({
   }[] = [
     {
       id: 'explore',
-      label: '1. Explore',
+      label: '1. Explore Areas',
       icon: Compass
     },
     {
-      id: 'configure',
-      label: '2. Configure',
+      id: 'select',
+      label: '2. Connect Green Spaces',
       icon: Sliders,
-      badge: isStale ? 'Stale' : undefined,
-      badgeColor: 'bg-amber-100 text-amber-800 border-amber-300'
+      badge: selectedCount > 0 ? `${selectedCount} Chosen` : undefined,
+      badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300'
     },
     {
       id: 'review',
-      label: '3. Review Plan',
+      label: '3. Optimize & Review',
       icon: CheckCircle2,
-      badge: hasPlan ? (isStale ? 'Update' : 'Ready') : undefined,
+      badge: hasPlan
+        ? isStale
+          ? 'Update'
+          : 'Ready'
+        : hasCandidateRoutes
+        ? 'Routes Ready'
+        : undefined,
       badgeColor: isStale
         ? 'bg-amber-100 text-amber-800 border-amber-300'
         : 'bg-emerald-100 text-emerald-800 border-emerald-300'

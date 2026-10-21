@@ -92,3 +92,45 @@ class ScenarioComparisonResponse(BaseModel):
     divergent_connectivity_ids: List[str]
     divergent_heat_ids: List[str]
     summary_narrative: str
+
+
+class CustomPlanningPoint(BaseModel):
+    id: str
+    name: str
+    coordinates: List[float] = Field(
+        ...,
+        description="Coordinates as [longitude, latitude] in EPSG:4326"
+    )
+
+
+class UserDirectedPlanningRequest(BaseModel):
+    selected_patch_ids: List[str] = Field(
+        ...,
+        description="List of selected green patch IDs (e.g. ['patch_001', 'patch_002'])"
+    )
+    custom_points: Optional[List[CustomPlanningPoint]] = Field(
+        default=None,
+        description="Optional custom planning locations/points within the study area"
+    )
+    budget_inr: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=500000000.0,
+        description="Optional budget cap to immediately run optimization on the user-selected candidate set"
+    )
+    profile: Optional[str] = Field(
+        default="connectivity_first",
+        description="Optimization strategy profile ('connectivity_first' or 'heat_priority_first')"
+    )
+
+
+class UserDirectedPlanningResponse(BaseModel):
+    selected_patch_ids: List[str]
+    selected_endpoints: List[Dict[str, Any]]
+    candidate_corridors_geojson: Dict[str, Any]
+    candidate_corridors: List[Dict[str, Any]]
+    total_candidate_routes: int
+    total_candidate_length_km: float
+    total_candidate_cost_inr: float
+    optimization_plan: Optional[OptimizationResponse] = None
+
