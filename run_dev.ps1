@@ -28,24 +28,23 @@ if (-not (Test-Path $frontendNodeModules)) {
     exit 1
 }
 
-# 3. Check for Port Conflicts (8000 & 5173)
+# 3. Check and Launch Backend
 $port8000 = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue
 if ($port8000) {
-    Write-Host "[INFO] Port 8000 is already in use (PID: $($port8000[0].OwningProcess)). FastAPI may already be running." -ForegroundColor Cyan
+    Write-Host "[1/3] Port 8000 is already active (PID: $($port8000[0].OwningProcess)). FastAPI backend already running." -ForegroundColor Green
+} else {
+    Write-Host "[1/3] Starting FastAPI backend on http://127.0.0.1:8000..." -ForegroundColor Cyan
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Starting GreenLink Delhi FastAPI Backend...' -ForegroundColor Green; cd '$rootDir\backend'; .venv\Scripts\uvicorn.exe app.main:app --port 8000 --host 127.0.0.1 --reload"
 }
 
+# 4. Check and Launch Frontend
 $port5173 = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue
 if ($port5173) {
-    Write-Host "[INFO] Port 5173 is already in use (PID: $($port5173[0].OwningProcess)). Vite dev server may already be running." -ForegroundColor Cyan
+    Write-Host "[2/3] Port 5173 is already active (PID: $($port5173[0].OwningProcess)). Vite frontend already running." -ForegroundColor Green
+} else {
+    Write-Host "[2/3] Starting Vite frontend on http://127.0.0.1:5173..." -ForegroundColor Cyan
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Starting GreenLink Delhi Vite Frontend...' -ForegroundColor Green; cd '$rootDir\frontend'; npm run dev -- --host 127.0.0.1 --port 5173"
 }
-
-# 3. Launch Backend in Separate Window
-Write-Host "[1/3] Starting FastAPI backend on http://127.0.0.1:8000..." -ForegroundColor Cyan
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Starting GreenLink Delhi FastAPI Backend...' -ForegroundColor Green; cd '$rootDir\backend'; .venv\Scripts\uvicorn.exe app.main:app --port 8000 --host 127.0.0.1 --reload"
-
-# 4. Launch Frontend in Separate Window
-Write-Host "[2/3] Starting Vite frontend on http://127.0.0.1:5173..." -ForegroundColor Cyan
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Starting GreenLink Delhi Vite Frontend...' -ForegroundColor Green; cd '$rootDir\frontend'; npm run dev -- --host 127.0.0.1 --port 5173"
 
 # 5. Open Browser after brief initialization
 Start-Sleep -Seconds 3

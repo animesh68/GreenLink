@@ -132,46 +132,72 @@ All values below are verified against the live FastAPI `/api/v1` backend endpoin
 - **Divergent Heat-Priority Corridors (3):** `cand_012`, `cand_013`, `cand_014`
 
 ---
+---
 
-## 7. Explicit Caveats & Scientific Disclaimers
+## 7. Metric Explanations & Scientific Caveats
 
+### 7.1 What Each Displayed Metric Means
+- **Distance-Weighted Connectivity Index ($IIC_{dist}$):**  
+  *Units: Index Points [0–100].* Measures whole-landscape topological connectivity between habitat patches, weighted by patch area squared and discounted by network shortest-path travel distance along corridors ($1 / [1 + d_G/1000\text{m}]$).  
+  - *Baseline value:* **15.17 points**, reflecting the intra-patch self-connectivity of the 12 anchors without corridors ($\sum a_i^2 / A_{tot}^2 \times 100$).  
+  - *Gain:* Represents the increase in probabilistic dispersal access across the urban habitat network.
+- **Heat-Priority Proxy Coverage ($H$):**  
+  *Units: Weighted Proxy Hectares.* Evaluates the spatial overlap between selected 25m radius corridor buffers (50m total right-of-way swath) and the 143-cell vulnerability grid. Merged geometrically via `shapely.ops.unary_union` in `EPSG:32643` to ensure shared street segments and intersections are never double-counted.
+- **Network Fragmentation (Isolated Clusters):**  
+  *Units: Integer Count.* The number of disconnected connected components in the ecological graph. Starts at 12 (all green spaces isolated) and decreases as corridor selections bridge components (e.g., 12 $\rightarrow$ 7 under ₹5 Cr).
+- **Provisional Budget Spent & Utilization:**  
+  *Units: Indian Rupees (₹ / Cr) and Percentage.* Sum of linear road-typology development costs for selected corridors ($₹1.5\text{L mobilization} + \text{segment length} \times \text{typology rate}$). The budget invariant guarantees total spent $\le$ user-defined budget cap under all circumstances.
+
+### 7.2 Explicit Caveats & Methodological Honesty
 Judges appreciate transparency and rigor over unsupported marketing claims. The prototype adheres to the following principles:
-
 1. **Mapped vs. Verified Green Spaces:** Green anchor polygons are sourced from OpenStreetMap (ODbL). They reflect designated public parks, golf courses, and ridge reserves, not field-surveyed ecological canopy quality or species composition.
 2. **Planning Candidates vs. Approved Routes:** Candidate corridors are street-network shortest paths along existing roadways. They represent exploratory planning corridors, not legally approved public works engineering projects or underground utility clearance routes.
 3. **Provisional Cost Model vs. Official Tenders:** Cost estimates are based on standardized linear road-typology benchmarks (₹2,000–₹6,000 per meter + mobilization). They do not substitute for detailed engineering project reports (DPR) or contractor tender bids.
 4. **Heat-Priority Proxy vs. Satellite Thermography:** The 143-cell heat priority grid is an empirical spatial proxy model derived from distance to concrete commercial centers versus cool vegetative buffers. It does not measure satellite land surface temperature (LST) or guarantee specific Celsius temperature reductions.
 5. **Greedy Heuristic vs. Global Optimum:** The greedy marginal-benefit knapsack optimizer is a fast, explainable polynomial-time heuristic. While highly effective for interactive planning, it does not mathematically guarantee a globally optimal integer-programming solution.
+6. **Automated Tests:** The 29 automated tests demonstrate software determinism and invariant enforcement, not real-world ecological or physical validity.
 
 ---
 
-## 8. Reliable Local Startup Commands
+## 8. Likely Jury Questions & Defensible Answers
+
+**Q1: Why use a greedy heuristic instead of an exact Integer Linear Programming (ILP) or Mixed-Integer solver?**  
+> *"The greedy marginal-benefit knapsack algorithm provides polynomial-time responsiveness ($O(K \cdot N)$) essential for real-time web dashboards, dynamic re-calculation of marginal gains as graph topology changes, and transparent, step-by-step human-readable selection rationales. In spatial network planning where adding a corridor dynamically alters shortest paths across the whole network, greedy selection yields intuitive, explainable ROI ordering for municipal stakeholders."*
+
+**Q2: Is your heat-priority grid based on real satellite surface temperature (LST)?**  
+> *"No, and we are explicitly transparent about this in the UI: our 143-cell grid is an empirical spatial proxy model derived from distance to high-albedo concrete transit hubs versus vegetative cool sinks. It does not measure satellite radiometry or guarantee a specific Celsius cooling effect. It acts as an illustrative spatial priority weight."*
+
+**Q3: How realistic is planting trees on these 14 candidate street corridors?**  
+> *"These are street-network planning candidates derived from OpenStreetMap road centerlines using metric shortest paths between green anchors. They identify where rights-of-way make topological sense. Before any physical implementation, municipal engineers must conduct underground utility surveys, traffic capacity analyses, and legal right-of-way feasibility studies."*
+
+**Q4: Why does the baseline connectivity score start at 15.17 instead of 0?**  
+> *"In the Integral Index of Connectivity ($IIC$), connectivity is defined as $\sum \sum (a_i a_j / (1 + d_{ij}/d_0)) / A_{tot}^2 \times 100$. Even with zero connecting corridors, organisms already have access to the area within each isolated patch itself ($i = j$, where $d_{ii} = 0$). The intra-patch self-connectivity evaluates to $\sum a_i^2 / A_{tot}^2 \times 100 = 15.17$ points across the 12 anchors. Corridor additions increase this score by enabling inter-patch movement."*
+
+**Q5: How does the system prevent double-counting overlapping corridors?**  
+> *"In the Heat Coverage Engine, before computing spatial intersection with the 143-cell vulnerability grid, all selected candidate buffers (25m radius) are merged into a single geometric multi-polygon using `shapely.ops.unary_union` in projected metric coordinates (`EPSG:32643`). Shared roadway segments and junctions are counted exactly once."*
+
+---
+
+## 9. Reliable Local Startup & Emergency Recovery
 
 ### Fast Launch via PowerShell Script (Windows)
 From the project root:
 ```powershell
 .\run_dev.ps1
 ```
-*Checks prerequisites, starts FastAPI backend on `:8000`, starts Vite frontend on `:5173`, and automatically opens the browser.*
+*Checks prerequisites, detects if ports 8000/5173 are already running (and re-uses them gracefully), starts servers if needed, and opens `http://127.0.0.1:5173/` in the browser.*
 
 ### Manual Startup (Separate Terminals)
-
-**Terminal 1 — Backend:**
-```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt
-.venv\Scripts\uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-*Health Check: `curl http://127.0.0.1:8000/api/v1/health`*
-
-**Terminal 2 — Frontend:**
-```bash
-cd frontend
-npm install
-npm run dev -- --host 127.0.0.1 --port 5173
-```
-*Open Browser: `http://127.0.0.1:5173`*
+- **Terminal 1 (Backend):**
+  ```bash
+  cd backend
+  .venv\Scripts\uvicorn.exe app.main:app --host 127.0.0.1 --port 8000 --reload
+  ```
+- **Terminal 2 (Frontend):**
+  ```bash
+  cd frontend
+  npm run dev -- --host 127.0.0.1 --port 5173
+  ```
 
 ### Technical Verification Commands
 ```bash
@@ -184,3 +210,8 @@ backend\.venv\Scripts\python backend/verify_live_api.py
 # Run frontend production build
 cd frontend && npm run build
 ```
+
+### Emergency Live Demo Recovery Checklist
+- **If the backend disconnects:** Check if the backend terminal was accidentally closed. Re-run `.venv\Scripts\uvicorn.exe app.main:app --port 8000 --host 127.0.0.1`. Note: The frontend has automatic cached static data fallbacks in `/public/data/`, so map layers will still render even if the backend is temporarily offline.
+- **If map basemap tiles are slow:** OpenFreeMap Positron tiles require an internet connection. If Wi-Fi is intermittent, the vector boundary, green patches, and candidate corridors are stored locally and will render on top of the canvas regardless of basemap tile loading.
+- **If you need to restore the main demo scenario instantly:** Click **"Judge Demo Guide"** in the top header, then click **"Demo ₹5 Cr Connectivity"** in the modal footer. This automatically applies the ₹5 Cr budget and triggers the optimizer in a single click.
