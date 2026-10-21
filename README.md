@@ -100,11 +100,13 @@ $$\max_{S \subseteq C} \quad f(S) \quad \text{subject to} \quad \sum_{c \in S} \
 
 ### 5.2 Distance-Weighted Integral Index of Connectivity ($IIC_{dist}$)
 $$IIC_{dist} = \frac{\sum_{comp} \sum_{i,j \in comp} \frac{a_i \cdot a_j}{1 + d_G(i,j)/d_0}}{A_{tot}^2} \times 100$$
-Where $a_i, a_j$ are green anchor areas in hectares, $A_{tot} = 1,752.72\text{ ha}$, $d_G(i,j)$ is the Dijkstra shortest path in meters along selected corridors, and $d_0 = 1,000\text{ m}$ (1 km characteristic scale).
+Where $a_i, a_j$ are green anchor areas in hectares, $A_{tot} = 1,752.72\text{ ha}$, $d_G(i,j)$ is the Dijkstra shortest path in meters along selected corridors, and $d_0 = 1,000\text{ m}$ (1 km characteristic scale).  
+*Baseline connectivity (0 selected corridors): **15.17 index points**, reflecting intra-patch self-connectivity ($\sum a_i^2 / A_{tot}^2 \times 100$) across the 12 isolated green anchors.*
 
 ### 5.3 Heat-Priority Proxy Coverage ($H$)
 $$H(S) = \sum_{k=1}^{143} w_k \cdot \text{Area}\left(\left[\bigcup_{c \in S} \text{Buffer}_{25\text{m}}(c)\right] \cap \text{Cell}_k\right)$$
-Where $w_k \in [0.15, 0.95]$ is the heat vulnerability proxy score of grid cell $k$.
+Where $w_k \in [0.15, 0.95]$ is the empirical heat vulnerability proxy score of grid cell $k$.  
+*A 25m buffer radius on either side of candidate road centerlines generates a 50m total right-of-way corridor swath in UTM Zone 43N (`EPSG:32643`). Geometric unary union prevents double-counting of overlapping corridor footprints.*
 
 ---
 

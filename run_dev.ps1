@@ -28,6 +28,17 @@ if (-not (Test-Path $frontendNodeModules)) {
     exit 1
 }
 
+# 3. Check for Port Conflicts (8000 & 5173)
+$port8000 = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue
+if ($port8000) {
+    Write-Host "[INFO] Port 8000 is already in use (PID: $($port8000[0].OwningProcess)). FastAPI may already be running." -ForegroundColor Cyan
+}
+
+$port5173 = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue
+if ($port5173) {
+    Write-Host "[INFO] Port 5173 is already in use (PID: $($port5173[0].OwningProcess)). Vite dev server may already be running." -ForegroundColor Cyan
+}
+
 # 3. Launch Backend in Separate Window
 Write-Host "[1/3] Starting FastAPI backend on http://127.0.0.1:8000..." -ForegroundColor Cyan
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Starting GreenLink Delhi FastAPI Backend...' -ForegroundColor Green; cd '$rootDir\backend'; .venv\Scripts\uvicorn.exe app.main:app --port 8000 --host 127.0.0.1 --reload"
