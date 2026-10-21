@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Header } from './components/Header'
+import { WorkstationHeader, type WorkflowStage } from './components/WorkstationHeader'
+import { WorkstationSidebar } from './components/WorkstationSidebar'
 import { MapContainer } from './components/Map/MapContainer'
-import { InfoPanel } from './components/InfoPanel'
-import { PlanningPanel } from './components/PlanningPanel'
+import { StreetViewInspector } from './components/StreetViewInspector'
 import { ScenarioModal } from './components/ScenarioModal'
 import { GuideModal } from './components/GuideModal'
 import {
@@ -43,9 +43,15 @@ export function App() {
   const [showHeatGrid, setShowHeatGrid] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const [fromBackend, setFromBackend] = useState<boolean>(false)
 
-  // Phase 3 Optimization State
+  // 4 Workflow Stages: 'explore' | 'configure' | 'review' | 'compare'
+  const [activeStage, setActiveStage] = useState<WorkflowStage>('explore')
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true)
+
+  // Street Imagery Inspector State
+  const [inspectingCandidate, setInspectingCandidate] = useState<CandidateCorridorFeature | null>(null)
+
+  // Optimization Planning State
   const [budgetInr, setBudgetInr] = useState<number>(50000000) // ₹5.00 Crore default
   const [profile, setProfile] = useState<'connectivity_first' | 'heat_priority_first'>('connectivity_first')
   const [optimizedPlan, setOptimizedPlan] = useState<OptimizationResponse | null>(null)
@@ -65,7 +71,8 @@ export function App() {
   const executeOptimization = useCallback(
     async (
       targetBudget = budgetInr,
-      targetProfile = profile
+      targetProfile = profile,
+      autoSwitchStage = true
     ) => {
       setIsOptimizing(true)
       try {
@@ -73,6 +80,9 @@ export function App() {
         setOptimizedPlan(result)
         setLastOptimizedBudget(targetBudget)
         setLastOptimizedProfile(targetProfile)
+        if (autoSwitchStage) {
+          setActiveStage('review')
+        }
       } catch (err: any) {
         console.error('Optimization error:', err)
         setError(err?.message || 'Failed to calculate optimization plan.')
@@ -84,19 +94,27 @@ export function App() {
   )
 
   // Execute scenario comparison
-  const executeComparison = async () => {
+  const executeComparison = useCallback(async () => {
     setIsComparing(true)
     try {
       const result = await compareScenarios(budgetInr)
       setScenarioComparison(result)
-      setShowScenarioModal(true)
     } catch (err: any) {
       console.error('Scenario comparison error:', err)
       setError(err?.message || 'Failed to compare planning scenarios.')
     } finally {
       setIsComparing(false)
     }
-  }
+  }, [budgetInr])
+
+  // When user enters compare stage, automatically fetch comparison if not yet loaded or budget changed
+  useEffect(() => {
+    if (activeStage === 'compare') {
+      if (!scenarioComparison || scenarioComparison.budget_inr !== budgetInr) {
+        executeComparison()
+      }
+    }
+  }, [activeStage, budgetInr, scenarioComparison, executeComparison])
 
   // Export Plan Handler
   const handleExportPlan = () => {
@@ -166,7 +184,6 @@ export function App() {
       setCandidateCorridors(candRes.data)
       setCandidateSummary(summaryRes.data)
       setHeatGrid(heatRes.data)
-      setFromBackend(studyRes.fromBackend && greenRes.fromBackend && candRes.fromBackend)
 
       // 3. Automatically run initial Phase 3 optimization at ₹5 Crore
       try {
@@ -190,12 +207,24 @@ export function App() {
 
   const handleSelectFeature = (feat: GreenSpaceFeature | null) => {
     setSelectedFeature(feat)
-    if (feat) setSelectedCandidate(null)
+    if (feat) {
+      setSelectedCandidate(null)
+      // Open sidebar to inspector if closed
+      setIsSidebarOpen(true)
+      setActiveStage('explore')
+    }
   }
 
   const handleSelectCandidate = (cand: CandidateCorridorFeature | null) => {
     setSelectedCandidate(cand)
-    if (cand) setSelectedFeature(null)
+    if (cand) {
+      setSelectedFeature(null)
+      setIsSidebarOpen(true)
+      // If currently on explore or review, stay on stage
+      if (activeStage !== 'explore' && activeStage !== 'review') {
+        setActiveStage('explore')
+      }
+    }
   }
 
   const handleClearSelection = () => {
@@ -225,6 +254,7 @@ export function App() {
     setOptimizedPlan(planToApply)
     setLastOptimizedBudget(scenarioComparison.budget_inr)
     setLastOptimizedProfile(appliedProfile)
+    setActiveStage('review')
   }
 
   const featureCount = greenSpaces?.features?.length || 0
@@ -235,42 +265,80 @@ export function App() {
     ) || 0
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden select-none">
-      {/* 1. Dashboard Header */}
-      <Header
+    <div className="flex flex-col h-screen w-screen bg-[#F7F6F0] text-[#1D2A22] overflow-hidden select-none">
+      {/* 1. GIS Workstation Top Header with 4-Stage Workflow Switcher */}
+      <WorkstationHeader
+        activeStage={activeStage}
+        onStageChange={(stage) => setActiveStage(stage)}
         isBackendLive={isBackendLive}
         backendVersion={health?.version || '0.1.0'}
+        hasPlan={optimizedPlan !== null}
+        isStale={isStale}
         onOpenGuide={() => setShowGuideModal(true)}
       />
 
-      {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col md:flex-row relative overflow-hidden">
+      {/* 2. Main Workstation Body: Collapsible Sidebar + Dominant Map + Optional Street Inspector */}
+      <div className="flex-1 flex flex-row relative overflow-hidden">
         {/* Loading Overlay */}
         {loading && (
-          <div className="absolute inset-0 z-30 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
-            <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin" />
-            <div className="text-sm font-medium text-slate-300">
+          <div className="absolute inset-0 z-40 bg-white/80 backdrop-blur-xs flex flex-col items-center justify-center gap-3">
+            <RefreshCw className="w-8 h-8 text-[#285943] animate-spin" />
+            <div className="text-sm font-semibold text-[#1D2A22]">
               Loading South-Central Delhi Geospatial Layers & Optimizer...
             </div>
           </div>
         )}
 
-        {/* Error Notice */}
+        {/* Global Error Notice */}
         {error && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-red-950/90 border border-red-700/80 text-red-200 px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2 text-xs">
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-rose-50 border border-rose-300 text-rose-900 px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2 text-xs">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{error}</span>
             <button
               onClick={loadData}
-              className="ml-2 underline font-semibold text-white hover:text-red-200 cursor-pointer"
+              className="ml-2 underline font-bold text-rose-950 hover:text-rose-700 cursor-pointer"
             >
               Retry
             </button>
           </div>
         )}
 
-        {/* Map Container */}
-        <div className="flex-1 h-full relative">
+        {/* Workflow Sidebar */}
+        <WorkstationSidebar
+          activeStage={activeStage}
+          onStageChange={(stage) => setActiveStage(stage)}
+          isOpen={isSidebarOpen}
+          onToggleOpen={() => setIsSidebarOpen(!isSidebarOpen)}
+          studyArea={studyArea}
+          featureCount={featureCount}
+          totalAreaHa={totalAreaHa}
+          candidateSummary={candidateSummary}
+          showCandidates={showCandidates}
+          showHeatGrid={showHeatGrid}
+          onToggleCandidates={() => setShowCandidates(!showCandidates)}
+          onToggleHeatGrid={() => setShowHeatGrid(!showHeatGrid)}
+          selectedFeature={selectedFeature}
+          selectedCandidate={selectedCandidate}
+          onClearSelection={handleClearSelection}
+          onSelectCandidateById={handleSelectCandidateById}
+          onInspectStreet={(cand) => setInspectingCandidate(cand)}
+          budgetInr={budgetInr}
+          profile={profile}
+          isOptimizing={isOptimizing}
+          isStale={isStale}
+          optimizedPlan={optimizedPlan}
+          onBudgetChange={(val) => setBudgetInr(val)}
+          onProfileChange={(prof) => setProfile(prof)}
+          onOptimize={() => executeOptimization(budgetInr, profile, true)}
+          onExportPlan={handleExportPlan}
+          scenarioComparison={scenarioComparison}
+          isComparing={isComparing}
+          onCompare={executeComparison}
+          onApplyPlan={handleApplyScenarioPlan}
+        />
+
+        {/* Dominant Map Container */}
+        <div className="flex-1 h-full relative overflow-hidden">
           <MapContainer
             greenSpaces={greenSpaces}
             studyBoundary={studyArea?.boundary_geojson || null}
@@ -285,40 +353,22 @@ export function App() {
             onToggleHeatGrid={() => setShowHeatGrid(!showHeatGrid)}
             onSelectFeature={handleSelectFeature}
             onSelectCandidate={handleSelectCandidate}
+            onInspectStreet={(cand) => setInspectingCandidate(cand)}
           />
         </div>
 
-        {/* Spatial Information & Decision Support Panel */}
-        <InfoPanel
-          studyArea={studyArea}
-          featureCount={featureCount}
-          totalAreaHa={totalAreaHa}
-          candidateSummary={candidateSummary}
-          selectedFeature={selectedFeature}
-          selectedCandidate={selectedCandidate}
-          optimizedPlan={optimizedPlan}
-          fromBackend={fromBackend}
-          onClearSelection={handleClearSelection}
-          onSelectCandidateById={handleSelectCandidateById}
-        />
+        {/* Street-Level Imagery Inspector Drawer */}
+        {inspectingCandidate && (
+          <div className="absolute right-0 top-0 bottom-0 z-30 shadow-2xl flex">
+            <StreetViewInspector
+              candidate={inspectingCandidate}
+              onClose={() => setInspectingCandidate(null)}
+            />
+          </div>
+        )}
       </div>
 
-      {/* 3. Phase 3 Interactive Planning Toolbar */}
-      <PlanningPanel
-        budgetInr={budgetInr}
-        profile={profile}
-        isOptimizing={isOptimizing}
-        isComparing={isComparing}
-        isStale={isStale}
-        hasOptimizedPlan={optimizedPlan !== null}
-        onBudgetChange={(val) => setBudgetInr(val)}
-        onProfileChange={(prof) => setProfile(prof)}
-        onOptimize={() => executeOptimization(budgetInr, profile)}
-        onCompare={executeComparison}
-        onExportPlan={handleExportPlan}
-      />
-
-      {/* 4. Side-by-Side Scenario Comparison Modal */}
+      {/* 3. Modal: Side-by-Side Scenario Comparison Modal */}
       <ScenarioModal
         comparison={scenarioComparison}
         isOpen={showScenarioModal}
@@ -326,18 +376,17 @@ export function App() {
         onApplyPlan={handleApplyScenarioPlan}
       />
 
-      {/* 5. Judge & Evaluator Demonstration Guide Modal */}
+      {/* 4. Modal: Judge & Evaluator Demonstration Walkthrough */}
       <GuideModal
         isOpen={showGuideModal}
         onClose={() => setShowGuideModal(false)}
         onRunQuickDemo={(budget, prof) => {
           setBudgetInr(budget)
           setProfile(prof)
-          executeOptimization(budget, prof)
+          executeOptimization(budget, prof, true)
         }}
       />
     </div>
-
   )
 }
 
