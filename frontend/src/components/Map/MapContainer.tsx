@@ -19,7 +19,8 @@ import {
   Map as MapIcon,
   Globe,
   AlertTriangle,
-  X
+  X,
+  Trees
 } from 'lucide-react'
 
 // Set MapLibre worker bundle URL to prevent runtime worker 404 errors with Vite
@@ -167,8 +168,10 @@ interface MapContainerProps {
   optimizedPlan: OptimizationResponse | null
   selectedFeature: GreenSpaceFeature | null
   selectedCandidate: CandidateCorridorFeature | null
+  showGreenSpaces?: boolean
   showCandidates: boolean
   showHeatGrid?: boolean
+  onToggleGreenSpaces?: () => void
   onToggleCandidates: () => void
   onToggleHeatGrid?: () => void
   onSelectFeature: (feature: GreenSpaceFeature | null) => void
@@ -188,8 +191,10 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   optimizedPlan,
   selectedFeature,
   selectedCandidate,
+  showGreenSpaces: showGreenSpacesProp,
   showCandidates,
   showHeatGrid = false,
+  onToggleGreenSpaces: onToggleGreenSpacesProp,
   onToggleCandidates,
   onToggleHeatGrid,
   onSelectFeature,
@@ -203,6 +208,19 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   const mapRef = useRef<maplibregl.Map | null>(null)
   const popupRef = useRef<maplibregl.Popup | null>(null)
   const handlersAttachedRef = useRef<boolean>(false)
+
+  // Independent Green Spaces visibility state (defaults to false for minimal clean initial map)
+  const [internalShowGreenSpaces, setInternalShowGreenSpaces] = useState<boolean>(false)
+  const currentShowGreenSpaces =
+    showGreenSpacesProp !== undefined ? showGreenSpacesProp : internalShowGreenSpaces
+
+  const handleToggleGreenSpaces = () => {
+    if (onToggleGreenSpacesProp) {
+      onToggleGreenSpacesProp()
+    } else {
+      setInternalShowGreenSpaces((prev) => !prev)
+    }
+  }
 
   const [activeBasemap, setActiveBasemap] = useState<BasemapId>('streets')
   const [keyNotice, setKeyNotice] = useState<{
@@ -227,6 +245,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   const onSelectFeatureRef = useRef(onSelectFeature)
   const onSelectCandidateRef = useRef(onSelectCandidate)
   const onInspectStreetRef = useRef(onInspectStreet)
+  const showGreenSpacesRef = useRef(currentShowGreenSpaces)
   const showCandidatesRef = useRef(showCandidates)
   const showHeatGridRef = useRef(showHeatGrid)
   const selectedPatchIdsRef = useRef(selectedPatchIds)
@@ -242,6 +261,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     onSelectFeatureRef.current = onSelectFeature
     onSelectCandidateRef.current = onSelectCandidate
     onInspectStreetRef.current = onInspectStreet
+    showGreenSpacesRef.current = currentShowGreenSpaces
     showCandidatesRef.current = showCandidates
     showHeatGridRef.current = showHeatGrid
     selectedPatchIdsRef.current = selectedPatchIds
@@ -256,6 +276,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     onSelectFeature,
     onSelectCandidate,
     onInspectStreet,
+    currentShowGreenSpaces,
     showCandidates,
     showHeatGrid,
     selectedPatchIds,
@@ -294,7 +315,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
             0.75, '#F97316',
             0.95, '#EF4444'
           ],
-          'fill-opacity': 0.35
+          'fill-opacity': 0.20
         }
       })
     }
@@ -309,8 +330,8 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         },
         paint: {
           'line-color': '#FFFFFF',
-          'line-width': 0.75,
-          'line-opacity': 0.3
+          'line-width': 0.35,
+          'line-opacity': 0.12
         }
       })
     }
@@ -349,11 +370,11 @@ export const MapContainer: React.FC<MapContainerProps> = ({
             ['linear'],
             ['zoom'],
             10, 1.0,
-            13, 1.5,
-            16, 2.0
+            13, 1.4,
+            16, 1.8
           ],
           'line-dasharray': [4, 3],
-          'line-opacity': 0.55
+          'line-opacity': 0.45
         }
       })
     }
@@ -385,16 +406,16 @@ export const MapContainer: React.FC<MapContainerProps> = ({
             'interpolate',
             ['linear'],
             ['zoom'],
-            10, 2.5,
-            13, 3.8,
-            16, 5.0
+            10, 1.8,
+            13, 2.8,
+            16, 3.8
           ],
-          'line-opacity': 0.45
+          'line-opacity': 0.25
         }
       })
     }
 
-    // Active warm amber dashed candidate line
+    // Active warm amber dashed candidate line (thin, muted styling)
     if (!map.getLayer('candidate-corridors-line')) {
       map.addLayer({
         id: 'candidate-corridors-line',
@@ -406,18 +427,45 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           visibility: showCandidatesRef.current ? 'visible' : 'none'
         },
         paint: {
-          'line-color': '#C28B39',
+          'line-color': '#D99B38',
           'line-width': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            10, 1.2,
-            13, 2.0,
-            16, 3.2
+            10, 1.0,
+            13, 1.6,
+            16, 2.4
           ],
           'line-dasharray': [3, 2],
-          'line-opacity': 0.85
+          'line-opacity': 0.75
         }
+      })
+    }
+
+    // Glowing amber hover highlight line for hovered candidate corridor
+    if (!map.getLayer('corridor-hover-highlight')) {
+      map.addLayer({
+        id: 'corridor-hover-highlight',
+        type: 'line',
+        source: 'candidate-corridors',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+          visibility: showCandidatesRef.current ? 'visible' : 'none'
+        },
+        paint: {
+          'line-color': '#F59E0B',
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 3.2,
+            13, 4.8,
+            16, 6.8
+          ],
+          'line-opacity': 0.95
+        },
+        filter: ['==', 'candidate_id', '']
       })
     }
 
@@ -517,15 +565,18 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       })
     }
 
-    // Restrained forest green polygon fill
+    // Translucent forest green polygon fill (subtle, restrained)
     if (!map.getLayer('green-spaces-fill')) {
       map.addLayer({
         id: 'green-spaces-fill',
         type: 'fill',
         source: 'green-spaces',
+        layout: {
+          visibility: showGreenSpacesRef.current ? 'visible' : 'none'
+        },
         paint: {
           'fill-color': '#285943',
-          'fill-opacity': 0.28
+          'fill-opacity': 0.20
         }
       })
     }
@@ -535,17 +586,20 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         id: 'green-spaces-line',
         type: 'line',
         source: 'green-spaces',
+        layout: {
+          visibility: showGreenSpacesRef.current ? 'visible' : 'none'
+        },
         paint: {
-          'line-color': '#1E4332',
+          'line-color': '#2D6A4F',
           'line-width': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            10, 1.0,
-            13, 1.5,
-            16, 2.0
+            10, 0.75,
+            13, 1.25,
+            16, 1.75
           ],
-          'line-opacity': 0.75
+          'line-opacity': 0.55
         }
       })
     }
@@ -558,6 +612,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         source: 'green-spaces',
         minzoom: 11.5,
         layout: {
+          visibility: showGreenSpacesRef.current ? 'visible' : 'none',
           'text-field': ['get', 'name'],
           'text-size': [
             'interpolate',
@@ -808,13 +863,26 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     })
 
     // Corridors Click & Hover
-    map.on('mouseenter', 'candidate-corridors-hit', () => {
+    map.on('mouseenter', 'candidate-corridors-hit', (e: any) => {
+      if (!showCandidatesRef.current) return
       map.getCanvas().style.cursor = 'pointer'
+      if (e.features && e.features.length > 0) {
+        const cid = e.features[0].properties?.candidate_id || ''
+        if (map.getLayer('corridor-hover-highlight')) {
+          map.setFilter('corridor-hover-highlight', ['==', 'candidate_id', cid])
+        }
+      }
     })
     map.on('mouseleave', 'candidate-corridors-hit', () => {
       map.getCanvas().style.cursor = ''
+      if (map.getLayer('corridor-hover-highlight')) {
+        map.setFilter('corridor-hover-highlight', ['==', 'candidate_id', ''])
+      }
     })
-    map.on('click', 'candidate-corridors-hit', (e) => handleCorridorClick(e, map))
+    map.on('click', 'candidate-corridors-hit', (e) => {
+      if (!showCandidatesRef.current) return
+      handleCorridorClick(e, map)
+    })
 
     map.on('mouseenter', 'selected-corridors-line', () => {
       map.getCanvas().style.cursor = 'pointer'
@@ -826,12 +894,13 @@ export const MapContainer: React.FC<MapContainerProps> = ({
 
     // Green Spaces Click & Hover
     map.on('mouseenter', 'green-spaces-fill', () => {
-      map.getCanvas().style.cursor = 'pointer'
+      if (showGreenSpacesRef.current) map.getCanvas().style.cursor = 'pointer'
     })
     map.on('mouseleave', 'green-spaces-fill', () => {
       map.getCanvas().style.cursor = ''
     })
     map.on('click', 'green-spaces-fill', (e: any) => {
+      if (!showGreenSpacesRef.current) return
       if (!e.features || e.features.length === 0) return
       const feat = e.features[0] as unknown as GreenSpaceFeature
       const pid = feat.properties?.id || (feat as any).id
@@ -988,6 +1057,16 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   }
 
   const syncVisibilityAndFilters = (map: maplibregl.Map) => {
+    // Green spaces visibility
+    const greenVis = showGreenSpacesRef.current ? 'visible' : 'none'
+    if (map.getLayer('green-spaces-fill')) {
+      map.setLayoutProperty('green-spaces-fill', 'visibility', greenVis)
+      map.setLayoutProperty('green-spaces-line', 'visibility', greenVis)
+      if (map.getLayer('green-spaces-labels')) {
+        map.setLayoutProperty('green-spaces-labels', 'visibility', greenVis)
+      }
+    }
+
     // Candidates visibility
     const candVis = showCandidatesRef.current ? 'visible' : 'none'
     if (map.getLayer('candidate-corridors-line')) {
@@ -995,6 +1074,10 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       map.setLayoutProperty('candidate-corridors-casing', 'visibility', candVis)
       if (map.getLayer('candidate-corridors-hit')) {
         map.setLayoutProperty('candidate-corridors-hit', 'visibility', candVis)
+      }
+      if (map.getLayer('corridor-hover-highlight')) {
+        map.setLayoutProperty('corridor-hover-highlight', 'visibility', candVis)
+        map.setFilter('corridor-hover-highlight', ['==', 'candidate_id', ''])
       }
     }
 
@@ -1018,7 +1101,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     // Selected green spaces rings
     if (map.getLayer('green-spaces-selected-ring')) {
       const pids = selectedPatchIdsRef.current || []
-      if (pids.length > 0) {
+      if (pids.length > 0 && showGreenSpacesRef.current) {
         map.setFilter('green-spaces-selected-ring', ['in', 'id', ...pids])
         map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'visible')
       } else {
@@ -1032,10 +1115,41 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       map.setPaintProperty(
         'candidate-corridors-line',
         'line-opacity',
-        hasSelected ? 0.35 : 0.95
+        hasSelected ? 0.35 : 0.75
       )
     }
   }
+
+  // Sync green spaces layer visibility
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const applyGreenVisibility = () => {
+      const visibility = currentShowGreenSpaces ? 'visible' : 'none'
+      if (map.getLayer('green-spaces-fill')) {
+        map.setLayoutProperty('green-spaces-fill', 'visibility', visibility)
+        map.setLayoutProperty('green-spaces-line', 'visibility', visibility)
+        if (map.getLayer('green-spaces-labels')) {
+          map.setLayoutProperty('green-spaces-labels', 'visibility', visibility)
+        }
+      }
+      if (map.getLayer('green-spaces-selected-ring')) {
+        const pids = selectedPatchIdsRef.current || []
+        if (pids.length > 0 && currentShowGreenSpaces) {
+          map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'visible')
+        } else {
+          map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'none')
+        }
+      }
+    }
+
+    if (map.isStyleLoaded()) {
+      applyGreenVisibility()
+    } else {
+      map.once('load', applyGreenVisibility)
+    }
+  }, [currentShowGreenSpaces])
 
   // Sync selected patch rings
   useEffect(() => {
@@ -1044,7 +1158,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
 
     const applySelection = () => {
       if (map.getLayer('green-spaces-selected-ring')) {
-        if (selectedPatchIds.length > 0) {
+        if (selectedPatchIds.length > 0 && currentShowGreenSpaces) {
           map.setFilter('green-spaces-selected-ring', ['in', 'id', ...selectedPatchIds])
           map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'visible')
         } else {
@@ -1058,7 +1172,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     } else {
       map.once('load', applySelection)
     }
-  }, [selectedPatchIds])
+  }, [selectedPatchIds, currentShowGreenSpaces])
 
   // Sync candidate corridor layer visibility
   useEffect(() => {
@@ -1072,6 +1186,10 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         map.setLayoutProperty('candidate-corridors-casing', 'visibility', visibility)
         if (map.getLayer('candidate-corridors-hit')) {
           map.setLayoutProperty('candidate-corridors-hit', 'visibility', visibility)
+        }
+        if (map.getLayer('corridor-hover-highlight')) {
+          map.setLayoutProperty('corridor-hover-highlight', 'visibility', visibility)
+          map.setFilter('corridor-hover-highlight', ['==', 'candidate_id', ''])
         }
       }
     }
@@ -1272,7 +1390,24 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         </div>
 
         {/* Quick Layer Toggles */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap max-w-sm">
+          {/* Green Spaces Toggle */}
+          <button
+            onClick={handleToggleGreenSpaces}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border shadow-md transition-all cursor-pointer ${
+              currentShowGreenSpaces
+                ? 'bg-[#EBF2ED] text-[#285943] border-[#285943]'
+                : 'bg-white text-[#607065] border-[#D5D1C3] hover:bg-[#FAF9F5]'
+            }`}
+            title="Toggle verified green spaces"
+            id="map-toggle-green-spaces-btn"
+          >
+            <Trees className="w-3 h-3" />
+            <span>Green Spaces ({greenSpaces?.features?.length || 12})</span>
+            {currentShowGreenSpaces ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+          </button>
+
+          {/* Candidate Corridors Toggle */}
           <button
             onClick={onToggleCandidates}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border shadow-md transition-all cursor-pointer ${
@@ -1280,7 +1415,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
                 ? 'bg-[#FAF6ED] text-[#C28B39] border-[#C28B39]'
                 : 'bg-white text-[#607065] border-[#D5D1C3] hover:bg-[#FAF9F5]'
             }`}
-            title="Toggle candidate corridor routes"
+            title="Toggle benchmark candidate corridor routes"
             id="map-toggle-candidates-btn"
           >
             <Route className="w-3 h-3" />
@@ -1288,6 +1423,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
             {showCandidates ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
           </button>
 
+          {/* Heat Priority Grid Toggle */}
           {onToggleHeatGrid && (
             <button
               onClick={onToggleHeatGrid}
@@ -1307,7 +1443,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         </div>
       </div>
 
-      {/* Map Legend (Bottom Left) */}
+      {/* Map Legend (Bottom Left) - Synchronized with visible layers */}
       <div className="absolute bottom-6 left-4 z-10 bg-white/95 border border-[#D5D1C3] p-3.5 rounded-lg shadow-lg text-xs text-[#4A5850] max-w-xs backdrop-blur-xs">
         <div className="flex items-center gap-2 font-bold text-[#1D2A22] mb-2.5">
           <Layers className="w-3.5 h-3.5 text-[#285943]" />
@@ -1315,41 +1451,55 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         </div>
 
         <div className="space-y-2">
-          {/* Selected Corridors Legend Item */}
+          {/* Selected Corridors Legend Item - only if plan exists */}
           {selectedCount > 0 && (
             <div className="flex items-center gap-2">
-              <span className="w-4 h-1.5 rounded bg-[#15803D] border border-[#0F3D1F] shrink-0" />
-              <span className="text-[#15803D] font-bold">
+              <span className="w-4 h-1.5 rounded bg-[#059669] border border-[#064E3B] shrink-0" />
+              <span className="text-[#059669] font-bold">
                 Selected Corridors ({selectedCount} routes, {selectedLengthKm} km)
               </span>
             </div>
           )}
 
-          <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 rounded bg-[#285943]/60 border border-[#1E4332] shrink-0" />
-            <span className="text-[#1D2A22] font-medium">Verified Green Spaces (OSM)</span>
-          </div>
+          {/* Verified Green Spaces - only when enabled */}
+          {currentShowGreenSpaces && (
+            <div className="flex items-center gap-2">
+              <span className="w-3.5 h-3.5 rounded bg-[#285943]/20 border border-[#2D6A4F] shrink-0" />
+              <span className="text-[#1D2A22] font-medium">Verified Green Spaces (OSM)</span>
+            </div>
+          )}
 
-          <div className="flex items-center gap-2">
-            <span className="w-3.5 h-1 border-t-2 border-dashed border-[#C28B39] shrink-0" />
-            <span className={showCandidates ? 'text-[#C28B39] font-medium' : 'text-slate-400'}>
-              {selectedCount > 0 ? 'Unselected Candidates' : 'Candidate Corridors'} ({candidateCount} Street Routes)
-            </span>
-          </div>
+          {/* Candidate Corridors - only when enabled */}
+          {showCandidates && (
+            <div className="flex items-center gap-2">
+              <span className="w-3.5 h-1 border-t-2 border-dashed border-[#D99B38] shrink-0" />
+              <span className="text-[#C28B39] font-medium">
+                {selectedCount > 0 ? 'Unselected Candidates' : 'Candidate Corridors'} ({candidateCount} Routes)
+              </span>
+            </div>
+          )}
 
+          {/* Study Boundary - always visible subtle baseline */}
           <div className="flex items-center gap-2">
-            <span className="w-3.5 h-1 border-t-2 border-dashed border-[#285943] shrink-0" />
+            <span className="w-3.5 h-1 border-t-2 border-dashed border-[#285943]/60 shrink-0" />
             <span className="text-[#607065]">Study Boundary (~131.8 km²)</span>
           </div>
 
-          {/* Heat Grid Legend Bar */}
+          {/* Heat Grid Legend Bar - only when enabled */}
           {showHeatGrid && (
             <div className="pt-2 border-t border-[#E8E5DA]">
               <div className="flex items-center justify-between text-[10px] text-[#607065] mb-1">
                 <span>Heat Vulnerability (Proxy)</span>
                 <span className="font-mono text-rose-700">Cool → High</span>
               </div>
-              <div className="h-2 w-full rounded bg-gradient-to-r from-blue-500 via-cyan-400 via-yellow-400 via-orange-500 to-red-500" />
+              <div className="h-2 w-full rounded bg-gradient-to-r from-blue-500 via-cyan-400 via-yellow-400 via-orange-500 to-red-500 opacity-80" />
+            </div>
+          )}
+
+          {/* Subtle notice when all analytical layers are hidden */}
+          {!currentShowGreenSpaces && !showCandidates && selectedCount === 0 && !showHeatGrid && (
+            <div className="text-[10px] text-[#7A8A7F] italic pt-0.5">
+              Overlays hidden • Enable via top controls
             </div>
           )}
 
@@ -1367,3 +1517,4 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     </div>
   )
 }
+

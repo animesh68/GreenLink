@@ -49,8 +49,10 @@ interface WorkstationSidebarProps {
   featureCount: number
   totalAreaHa: number
   candidateSummary: CandidateSummary | null
+  showGreenSpaces?: boolean
   showCandidates: boolean
   showHeatGrid: boolean
+  onToggleGreenSpaces?: () => void
   onToggleCandidates: () => void
   onToggleHeatGrid: () => void
 
@@ -111,8 +113,10 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
   featureCount,
   totalAreaHa,
   candidateSummary,
+  showGreenSpaces = false,
   showCandidates,
   showHeatGrid,
+  onToggleGreenSpaces,
   onToggleCandidates,
   onToggleHeatGrid,
   selectedFeature,
@@ -281,6 +285,28 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                 </span>
 
                 <div className="space-y-1.5">
+                  {onToggleGreenSpaces && (
+                    <button
+                      onClick={onToggleGreenSpaces}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
+                        showGreenSpaces
+                          ? 'bg-[#EBF2ED] border-[#285943]/60 text-[#1D2A22]'
+                          : 'bg-white border-[#E2DFD2] text-[#607065] hover:bg-[#FAF9F5]'
+                      }`}
+                      id="sidebar-toggle-green-spaces-btn"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Trees className={`w-3.5 h-3.5 ${showGreenSpaces ? 'text-[#285943]' : 'text-slate-400'}`} />
+                        <span>Verified Green Spaces ({featureCount} Anchors)</span>
+                      </span>
+                      {showGreenSpaces ? (
+                        <Eye className="w-4 h-4 text-[#285943]" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 text-slate-400" />
+                      )}
+                    </button>
+                  )}
+
                   <button
                     onClick={onToggleCandidates}
                     className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${

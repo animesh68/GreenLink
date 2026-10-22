@@ -42,6 +42,7 @@ export function App() {
   const [heatGrid, setHeatGrid] = useState<HeatGridCollection | null>(null)
   const [selectedFeature, setSelectedFeature] = useState<GreenSpaceFeature | null>(null)
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateCorridorFeature | null>(null)
+  const [showGreenSpaces, setShowGreenSpaces] = useState<boolean>(false)
   const [showCandidates, setShowCandidates] = useState<boolean>(false) // Default false for clean explore mode
   const [showHeatGrid, setShowHeatGrid] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(true)
@@ -389,8 +390,10 @@ export function App() {
           featureCount={featureCount}
           totalAreaHa={totalAreaHa}
           candidateSummary={candidateSummary}
+          showGreenSpaces={showGreenSpaces}
           showCandidates={showCandidates}
           showHeatGrid={showHeatGrid}
+          onToggleGreenSpaces={() => setShowGreenSpaces(!showGreenSpaces)}
           onToggleCandidates={() => setShowCandidates(!showCandidates)}
           onToggleHeatGrid={() => setShowHeatGrid(!showHeatGrid)}
           selectedFeature={selectedFeature}
@@ -436,8 +439,10 @@ export function App() {
             optimizedPlan={optimizedPlan}
             selectedFeature={selectedFeature}
             selectedCandidate={selectedCandidate}
+            showGreenSpaces={showGreenSpaces}
             showCandidates={showCandidates}
             showHeatGrid={showHeatGrid}
+            onToggleGreenSpaces={() => setShowGreenSpaces(!showGreenSpaces)}
             onToggleCandidates={() => setShowCandidates(!showCandidates)}
             onToggleHeatGrid={() => setShowHeatGrid(!showHeatGrid)}
             onSelectFeature={handleSelectFeature}
