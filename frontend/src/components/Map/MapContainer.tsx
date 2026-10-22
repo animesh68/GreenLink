@@ -1500,7 +1500,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
                 ? 'bg-[#285943] text-white shadow-xs'
                 : 'text-[#607065] hover:text-[#1D2A22]'
             }`}
-            title="Street View demo mode (embedded ground-level imagery)"
+            title="Street-level imagery mode (open & free ground-level photos via Panoramax & Mapillary)"
             id="basemap-streetview-btn"
           >
             <Camera className="w-3 h-3" />
