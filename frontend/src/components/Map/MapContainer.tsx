@@ -17,59 +17,148 @@ import {
   EyeOff,
   Flame,
   Map as MapIcon,
-  Globe
+  Globe,
+  AlertTriangle,
+  X,
+  Trees,
+  Camera
 } from 'lucide-react'
+import { StreetViewModeViewer } from './StreetViewModeViewer'
 
 // Set MapLibre worker bundle URL to prevent runtime worker 404 errors with Vite
 maplibregl.setWorkerUrl(maplibreWorkerUrl)
 
 // Basemap Provider Configurations
-const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_API_KEY
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_API_KEY?.trim() || ''
 
-const BASEMAP_PRESETS = {
-  bright: {
-    id: 'bright',
-    name: 'Detailed Street',
+export type BasemapId = 'streets' | 'satellite' | 'hybrid' | 'dataviz'
+
+// Fallback raster styles with open fonts glyphs configured for vector symbol layers
+const GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf'
+
+const CARTO_POSITRON_STYLE = {
+  version: 8,
+  glyphs: GLYPHS_URL,
+  sources: {
+    'carto-positron': {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+        'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+        'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+      ],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors, © CARTO'
+    }
+  },
+  layers: [
+    {
+      id: 'carto-positron-layer',
+      type: 'raster',
+      source: 'carto-positron',
+      minzoom: 0,
+      maxzoom: 19
+    }
+  ]
+}
+
+const OSM_RASTER_STYLE = {
+  version: 8,
+  glyphs: GLYPHS_URL,
+  sources: {
+    'osm-raster': {
+      type: 'raster',
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors'
+    }
+  },
+  layers: [
+    {
+      id: 'osm-raster-layer',
+      type: 'raster',
+      source: 'osm-raster',
+      minzoom: 0,
+      maxzoom: 19
+    }
+  ]
+}
+
+const ESRI_IMAGERY_STYLE = {
+  version: 8,
+  glyphs: GLYPHS_URL,
+  sources: {
+    'esri-imagery': {
+      type: 'raster',
+      tiles: [
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+      ],
+      tileSize: 256,
+      attribution:
+        'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, GIS Community'
+    }
+  },
+  layers: [
+    {
+      id: 'esri-imagery-layer',
+      type: 'raster',
+      source: 'esri-imagery',
+      minzoom: 0,
+      maxzoom: 19
+    }
+  ]
+}
+
+export const BASEMAP_PRESETS: Record<
+  BasemapId,
+  {
+    id: BasemapId
+    name: string
+    style: any
+    fallbackStyle: any
+    type: 'vector' | 'raster'
+    description: string
+  }
+> = {
+  streets: {
+    id: 'streets',
+    name: 'Street',
     style: MAPTILER_KEY
-      ? `https://api.maptiler.com/maps/streets-v4/style.json?key=${MAPTILER_KEY}`
-      : 'https://tiles.openfreemap.org/styles/bright',
-    type: 'vector'
+      ? `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`
+      : OSM_RASTER_STYLE,
+    fallbackStyle: OSM_RASTER_STYLE,
+    type: MAPTILER_KEY ? 'vector' : 'raster',
+    description: 'Clean light street cartography with muted road hierarchy'
   },
   satellite: {
     id: 'satellite',
-    name: 'Satellite Aerial',
+    name: 'Satellite',
+    style: MAPTILER_KEY
+      ? `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_KEY}`
+      : ESRI_IMAGERY_STYLE,
+    fallbackStyle: ESRI_IMAGERY_STYLE,
+    type: 'raster',
+    description: 'High-resolution aerial satellite imagery'
+  },
+  hybrid: {
+    id: 'hybrid',
+    name: 'Hybrid',
     style: MAPTILER_KEY
       ? `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`
-      : {
-          version: 8,
-          sources: {
-            'esri-imagery': {
-              type: 'raster',
-              tiles: [
-                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-              ],
-              tileSize: 256,
-              attribution:
-                'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, GIS Community'
-            }
-          },
-          layers: [
-            {
-              id: 'esri-imagery-layer',
-              type: 'raster',
-              source: 'esri-imagery',
-              minzoom: 0,
-              maxzoom: 19
-            }
-          ]
-        },
-    type: 'raster'
+      : ESRI_IMAGERY_STYLE,
+    fallbackStyle: ESRI_IMAGERY_STYLE,
+    type: MAPTILER_KEY ? 'vector' : 'raster',
+    description: 'Satellite imagery with street network and label overlays'
   },
-  positron: {
-    id: 'positron',
-    name: 'Positron Muted',
-    style: 'https://tiles.openfreemap.org/styles/positron',
-    type: 'vector'
+  dataviz: {
+    id: 'dataviz',
+    name: 'Muted GIS',
+    style: MAPTILER_KEY
+      ? `https://api.maptiler.com/maps/dataviz-light/style.json?key=${MAPTILER_KEY}`
+      : CARTO_POSITRON_STYLE,
+    fallbackStyle: CARTO_POSITRON_STYLE,
+    type: MAPTILER_KEY ? 'vector' : 'raster',
+    description: 'Muted minimal cartography optimized for data visualization'
   }
 }
 
@@ -81,13 +170,19 @@ interface MapContainerProps {
   optimizedPlan: OptimizationResponse | null
   selectedFeature: GreenSpaceFeature | null
   selectedCandidate: CandidateCorridorFeature | null
+  showGreenSpaces?: boolean
   showCandidates: boolean
   showHeatGrid?: boolean
+  onToggleGreenSpaces?: () => void
   onToggleCandidates: () => void
   onToggleHeatGrid?: () => void
   onSelectFeature: (feature: GreenSpaceFeature | null) => void
   onSelectCandidate: (candidate: CandidateCorridorFeature | null) => void
   onInspectStreet?: (candidate: CandidateCorridorFeature) => void
+  // User-directed green space selection props:
+  selectedPatchIds?: string[]
+  isSelectionMode?: boolean
+  onTogglePatchSelection?: (patchId: string) => void
 }
 
 export const MapContainer: React.FC<MapContainerProps> = ({
@@ -98,19 +193,63 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   optimizedPlan,
   selectedFeature,
   selectedCandidate,
+  showGreenSpaces: showGreenSpacesProp,
   showCandidates,
   showHeatGrid = false,
+  onToggleGreenSpaces: onToggleGreenSpacesProp,
   onToggleCandidates,
   onToggleHeatGrid,
   onSelectFeature,
   onSelectCandidate,
-  onInspectStreet
+  onInspectStreet,
+  selectedPatchIds = [],
+  isSelectionMode = false,
+  onTogglePatchSelection
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const popupRef = useRef<maplibregl.Popup | null>(null)
+  const handlersAttachedRef = useRef<boolean>(false)
 
-  const [activeBasemap, setActiveBasemap] = useState<'bright' | 'satellite' | 'positron'>('bright')
+  // Independent Green Spaces visibility state (defaults to false for minimal clean initial map)
+  const [internalShowGreenSpaces, setInternalShowGreenSpaces] = useState<boolean>(false)
+  const currentShowGreenSpaces =
+    showGreenSpacesProp !== undefined ? showGreenSpacesProp : internalShowGreenSpaces
+
+  const handleToggleGreenSpaces = () => {
+    if (onToggleGreenSpacesProp) {
+      onToggleGreenSpacesProp()
+    } else {
+      setInternalShowGreenSpaces((prev) => !prev)
+    }
+  }
+
+  const [activeBasemap, setActiveBasemap] = useState<BasemapId>('streets')
+  const [isStreetViewActive, setIsStreetViewActive] = useState<boolean>(false)
+  const [streetViewTarget, setStreetViewTarget] = useState<{
+    lat: number
+    lng: number
+    zoom: number
+    sourceDesc: string
+  }>({
+    lat: 28.585,
+    lng: 77.215,
+    zoom: 12,
+    sourceDesc: 'Delhi Study Area Center'
+  })
+
+  const [keyNotice, setKeyNotice] = useState<{
+    type: 'warning' | 'error' | 'info'
+    message: string
+  } | null>(
+    !MAPTILER_KEY
+      ? {
+          type: 'warning',
+          message:
+            'MapTiler Cloud API key not configured in VITE_MAPTILER_API_KEY. Displaying OpenStreetMap / Esri fallback basemap.'
+        }
+      : null
+  )
 
   // Mutable refs to prevent stale closures in MapLibre event handlers
   const greenSpacesRef = useRef(greenSpaces)
@@ -121,8 +260,12 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   const onSelectFeatureRef = useRef(onSelectFeature)
   const onSelectCandidateRef = useRef(onSelectCandidate)
   const onInspectStreetRef = useRef(onInspectStreet)
+  const showGreenSpacesRef = useRef(currentShowGreenSpaces)
   const showCandidatesRef = useRef(showCandidates)
   const showHeatGridRef = useRef(showHeatGrid)
+  const selectedPatchIdsRef = useRef(selectedPatchIds)
+  const isSelectionModeRef = useRef(isSelectionMode)
+  const onTogglePatchSelectionRef = useRef(onTogglePatchSelection)
 
   useEffect(() => {
     greenSpacesRef.current = greenSpaces
@@ -133,8 +276,12 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     onSelectFeatureRef.current = onSelectFeature
     onSelectCandidateRef.current = onSelectCandidate
     onInspectStreetRef.current = onInspectStreet
+    showGreenSpacesRef.current = currentShowGreenSpaces
     showCandidatesRef.current = showCandidates
     showHeatGridRef.current = showHeatGrid
+    selectedPatchIdsRef.current = selectedPatchIds
+    isSelectionModeRef.current = isSelectionMode
+    onTogglePatchSelectionRef.current = onTogglePatchSelection
   }, [
     greenSpaces,
     studyBoundary,
@@ -144,8 +291,12 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     onSelectFeature,
     onSelectCandidate,
     onInspectStreet,
+    currentShowGreenSpaces,
     showCandidates,
-    showHeatGrid
+    showHeatGrid,
+    selectedPatchIds,
+    isSelectionMode,
+    onTogglePatchSelection
   ])
 
   // Setup all GeoJSON sources & layers on the map
@@ -179,7 +330,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
             0.75, '#F97316',
             0.95, '#EF4444'
           ],
-          'fill-opacity': 0.35
+          'fill-opacity': 0.20
         }
       })
     }
@@ -194,8 +345,8 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         },
         paint: {
           'line-color': '#FFFFFF',
-          'line-width': 0.75,
-          'line-opacity': 0.3
+          'line-width': 0.35,
+          'line-opacity': 0.12
         }
       })
     }
@@ -229,9 +380,16 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         source: 'study-boundary',
         paint: {
           'line-color': '#285943',
-          'line-width': 2.0,
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 1.0,
+            13, 1.4,
+            16, 1.8
+          ],
           'line-dasharray': [4, 3],
-          'line-opacity': 0.7
+          'line-opacity': 0.45
         }
       })
     }
@@ -259,13 +417,20 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         },
         paint: {
           'line-color': '#1D2A22',
-          'line-width': 4.5,
-          'line-opacity': 0.65
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 1.8,
+            13, 2.8,
+            16, 3.8
+          ],
+          'line-opacity': 0.25
         }
       })
     }
 
-    // Active warm amber dashed candidate line
+    // Active warm amber dashed candidate line (thin, muted styling)
     if (!map.getLayer('candidate-corridors-line')) {
       map.addLayer({
         id: 'candidate-corridors-line',
@@ -277,11 +442,45 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           visibility: showCandidatesRef.current ? 'visible' : 'none'
         },
         paint: {
-          'line-color': '#C28B39',
-          'line-width': 2.5,
+          'line-color': '#D99B38',
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 1.0,
+            13, 1.6,
+            16, 2.4
+          ],
           'line-dasharray': [3, 2],
-          'line-opacity': 0.95
+          'line-opacity': 0.75
         }
+      })
+    }
+
+    // Glowing amber hover highlight line for hovered candidate corridor
+    if (!map.getLayer('corridor-hover-highlight')) {
+      map.addLayer({
+        id: 'corridor-hover-highlight',
+        type: 'line',
+        source: 'candidate-corridors',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+          visibility: showCandidatesRef.current ? 'visible' : 'none'
+        },
+        paint: {
+          'line-color': '#F59E0B',
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 3.2,
+            13, 4.8,
+            16, 6.8
+          ],
+          'line-opacity': 0.95
+        },
+        filter: ['==', 'candidate_id', '']
       })
     }
 
@@ -306,8 +505,15 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-color': '#0F3D1F',
-          'line-width': 7.0,
+          'line-color': '#064E3B',
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 4.8,
+            13, 7.5,
+            16, 10.5
+          ],
           'line-opacity': 0.95
         }
       })
@@ -324,8 +530,15 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-color': '#15803D',
-          'line-width': 4.5,
+          'line-color': '#059669',
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 2.8,
+            13, 4.5,
+            16, 6.5
+          ],
           'line-opacity': 1.0
         }
       })
@@ -343,7 +556,14 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         },
         paint: {
           'line-color': '#2563EB',
-          'line-width': 6.0,
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 4.0,
+            13, 6.0,
+            16, 8.5
+          ],
           'line-opacity': 0.95
         },
         filter: ['==', 'candidate_id', '']
@@ -360,15 +580,18 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       })
     }
 
-    // Warm forest green polygon fill
+    // Translucent forest green polygon fill (subtle, restrained)
     if (!map.getLayer('green-spaces-fill')) {
       map.addLayer({
         id: 'green-spaces-fill',
         type: 'fill',
         source: 'green-spaces',
+        layout: {
+          visibility: showGreenSpacesRef.current ? 'visible' : 'none'
+        },
         paint: {
           'fill-color': '#285943',
-          'fill-opacity': 0.5
+          'fill-opacity': 0.20
         }
       })
     }
@@ -378,10 +601,52 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         id: 'green-spaces-line',
         type: 'line',
         source: 'green-spaces',
+        layout: {
+          visibility: showGreenSpacesRef.current ? 'visible' : 'none'
+        },
         paint: {
-          'line-color': '#1E4332',
-          'line-width': 1.5,
-          'line-opacity': 0.9
+          'line-color': '#2D6A4F',
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 0.75,
+            13, 1.25,
+            16, 1.75
+          ],
+          'line-opacity': 0.55
+        }
+      })
+    }
+
+    // Green space labels visible at neighborhood & street zoom levels (minzoom 11.5)
+    if (!map.getLayer('green-spaces-labels')) {
+      map.addLayer({
+        id: 'green-spaces-labels',
+        type: 'symbol',
+        source: 'green-spaces',
+        minzoom: 11.5,
+        layout: {
+          visibility: showGreenSpacesRef.current ? 'visible' : 'none',
+          'text-field': ['get', 'name'],
+          'text-size': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            11.5, 9.5,
+            13.5, 11.5,
+            16, 13.5
+          ],
+          'text-anchor': 'center',
+          'text-optional': true,
+          'text-max-width': 8,
+          'symbol-placement': 'point'
+        },
+        paint: {
+          'text-color': '#16432A',
+          'text-halo-color': '#FFFFFF',
+          'text-halo-width': 1.8,
+          'text-halo-blur': 0.5
         }
       })
     }
@@ -393,9 +658,38 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         source: 'green-spaces',
         paint: {
           'line-color': '#2563EB',
-          'line-width': 3.5
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 2.5,
+            13, 4.0,
+            16, 5.5
+          ]
         },
         filter: ['==', 'id', '']
+      })
+    }
+
+    // Glowing golden-amber selection ring for user-selected green space anchors
+    if (!map.getLayer('green-spaces-selected-ring')) {
+      map.addLayer({
+        id: 'green-spaces-selected-ring',
+        type: 'line',
+        source: 'green-spaces',
+        paint: {
+          'line-color': '#F59E0B',
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 2.8,
+            13, 4.2,
+            16, 5.8
+          ],
+          'line-opacity': 0.95
+        },
+        filter: ['in', 'id', '']
       })
     }
 
@@ -545,6 +839,9 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   }
 
   const attachMapEventHandlers = (map: maplibregl.Map) => {
+    if (handlersAttachedRef.current) return
+    handlersAttachedRef.current = true
+
     // Heat Grid events
     map.on('mouseenter', 'heat-grid-fill', () => {
       if (showHeatGridRef.current) map.getCanvas().style.cursor = 'pointer'
@@ -581,13 +878,26 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     })
 
     // Corridors Click & Hover
-    map.on('mouseenter', 'candidate-corridors-hit', () => {
+    map.on('mouseenter', 'candidate-corridors-hit', (e: any) => {
+      if (!showCandidatesRef.current) return
       map.getCanvas().style.cursor = 'pointer'
+      if (e.features && e.features.length > 0) {
+        const cid = e.features[0].properties?.candidate_id || ''
+        if (map.getLayer('corridor-hover-highlight')) {
+          map.setFilter('corridor-hover-highlight', ['==', 'candidate_id', cid])
+        }
+      }
     })
     map.on('mouseleave', 'candidate-corridors-hit', () => {
       map.getCanvas().style.cursor = ''
+      if (map.getLayer('corridor-hover-highlight')) {
+        map.setFilter('corridor-hover-highlight', ['==', 'candidate_id', ''])
+      }
     })
-    map.on('click', 'candidate-corridors-hit', (e) => handleCorridorClick(e, map))
+    map.on('click', 'candidate-corridors-hit', (e) => {
+      if (!showCandidatesRef.current) return
+      handleCorridorClick(e, map)
+    })
 
     map.on('mouseenter', 'selected-corridors-line', () => {
       map.getCanvas().style.cursor = 'pointer'
@@ -599,16 +909,23 @@ export const MapContainer: React.FC<MapContainerProps> = ({
 
     // Green Spaces Click & Hover
     map.on('mouseenter', 'green-spaces-fill', () => {
-      map.getCanvas().style.cursor = 'pointer'
+      if (showGreenSpacesRef.current) map.getCanvas().style.cursor = 'pointer'
     })
     map.on('mouseleave', 'green-spaces-fill', () => {
       map.getCanvas().style.cursor = ''
     })
     map.on('click', 'green-spaces-fill', (e: any) => {
+      if (!showGreenSpacesRef.current) return
       if (!e.features || e.features.length === 0) return
       const feat = e.features[0] as unknown as GreenSpaceFeature
-      onSelectFeatureRef.current(feat)
-      onSelectCandidateRef.current(null)
+      const pid = feat.properties?.id || (feat as any).id
+
+      if (isSelectionModeRef.current && onTogglePatchSelectionRef.current && pid) {
+        onTogglePatchSelectionRef.current(pid)
+      } else {
+        onSelectFeatureRef.current(feat)
+        onSelectCandidateRef.current(null)
+      }
 
       const props = feat.properties
       const html = `
@@ -652,34 +969,85 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     })
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right')
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
+    // Attribution visible (compact: false) to meet MapTiler terms of use and cartographic attribution standards
+    map.addControl(new maplibregl.AttributionControl({ compact: false }), 'bottom-right')
 
     map.on('error', (e) => {
-      if (e.error?.message?.includes('abort')) return
-      console.warn('MapLibre resource event:', e.error?.message || e)
+      const msg = e.error?.message || ''
+      const status = (e.error as any)?.status
+      if (msg.includes('abort') || msg.includes('canceled')) return
+
+      if (
+        status === 401 ||
+        status === 403 ||
+        msg.includes('403') ||
+        msg.includes('401') ||
+        msg.includes('Forbidden') ||
+        msg.includes('Unauthorized') ||
+        msg.includes('API KEY REQUIRED')
+      ) {
+        console.error('MapTiler key authorization error detected:', e.error)
+        setKeyNotice({
+          type: 'error',
+          message:
+            'MapTiler Cloud returned HTTP 403/401 (Invalid API key or quota limit). Gracefully falling back to OpenStreetMap / Carto basemap.'
+        })
+
+        const currentPreset = BASEMAP_PRESETS[activeBasemap]
+        if (typeof currentPreset.style === 'string' && currentPreset.fallbackStyle) {
+          map.setStyle(currentPreset.fallbackStyle as any)
+          map.once('style.load', () => {
+            addApplicationLayers(map)
+            syncAllSourceData(map)
+            syncVisibilityAndFilters(map)
+          })
+        }
+      } else {
+        console.warn('MapLibre resource event:', msg)
+      }
     })
 
     map.on('load', () => {
       addApplicationLayers(map)
+      map.resize()
     })
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapRef.current) {
+        mapRef.current.resize()
+      }
+    })
+    if (mapContainerRef.current) {
+      resizeObserver.observe(mapContainerRef.current)
+    }
 
     mapRef.current = map
 
     return () => {
+      resizeObserver.disconnect()
       map.remove()
       mapRef.current = null
+      handlersAttachedRef.current = false
     }
   }, [])
 
   // Handle Basemap Switch cleanly via map.setStyle and style.load
-  const handleBasemapChange = (newPresetKey: 'bright' | 'satellite' | 'positron') => {
+  const handleBasemapChange = (newPresetKey: BasemapId) => {
+    // Exit Street View mode if active
+    if (isStreetViewActive) {
+      setIsStreetViewActive(false)
+      requestAnimationFrame(() => {
+        mapRef.current?.resize()
+      })
+    }
+
     const map = mapRef.current
     if (!map || newPresetKey === activeBasemap) return
 
     setActiveBasemap(newPresetKey)
     const newPreset = BASEMAP_PRESETS[newPresetKey]
 
-    // Set new style
+    // Set new style replacing previous style cleanly
     map.setStyle(newPreset.style as any)
 
     // Re-add layers when new style finishes loading
@@ -687,6 +1055,61 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       addApplicationLayers(map)
       syncAllSourceData(map)
       syncVisibilityAndFilters(map)
+    })
+  }
+
+  // Handle Activating Street View Demo Mode (Captures current coordinates & preserves map)
+  const handleActivateStreetView = () => {
+    const map = mapRef.current
+    let lat = 28.585
+    let lng = 77.215
+    let zoom = 12
+    let sourceDesc = 'Current Map Center'
+
+    if (map) {
+      const center = map.getCenter()
+      lat = center.lat
+      lng = center.lng
+      zoom = map.getZoom()
+    }
+
+    // Prioritize selected corridor or selected green-space feature if active
+    if (selectedCandidate && selectedCandidate.geometry?.coordinates) {
+      const coords = selectedCandidate.geometry.coordinates
+      const mid = coords[Math.floor(coords.length / 2)]
+      if (mid && mid.length >= 2) {
+        lng = mid[0]
+        lat = mid[1]
+        sourceDesc = selectedCandidate.properties?.name || 'Selected Corridor'
+      }
+    } else if (selectedFeature && selectedFeature.geometry) {
+      const geom = selectedFeature.geometry
+      if (geom.type === 'Polygon' && geom.coordinates?.[0]?.length) {
+        const ring = geom.coordinates[0]
+        const mid = ring[Math.floor(ring.length / 2)]
+        lng = mid[0]
+        lat = mid[1]
+        sourceDesc = selectedFeature.properties?.name || 'Selected Green Space'
+      }
+    }
+
+    setStreetViewTarget({
+      lat: Number(lat.toFixed(6)),
+      lng: Number(lng.toFixed(6)),
+      zoom: Number(zoom.toFixed(1)),
+      sourceDesc
+    })
+    setIsStreetViewActive(true)
+  }
+
+  // Handle Returning to Map View
+  const handleReturnToMap = () => {
+    setIsStreetViewActive(false)
+    // Ensure MapLibre recalculates viewport dimensions immediately
+    requestAnimationFrame(() => {
+      if (mapRef.current) {
+        mapRef.current.resize()
+      }
     })
   }
 
@@ -723,6 +1146,16 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   }
 
   const syncVisibilityAndFilters = (map: maplibregl.Map) => {
+    // Green spaces visibility
+    const greenVis = showGreenSpacesRef.current ? 'visible' : 'none'
+    if (map.getLayer('green-spaces-fill')) {
+      map.setLayoutProperty('green-spaces-fill', 'visibility', greenVis)
+      map.setLayoutProperty('green-spaces-line', 'visibility', greenVis)
+      if (map.getLayer('green-spaces-labels')) {
+        map.setLayoutProperty('green-spaces-labels', 'visibility', greenVis)
+      }
+    }
+
     // Candidates visibility
     const candVis = showCandidatesRef.current ? 'visible' : 'none'
     if (map.getLayer('candidate-corridors-line')) {
@@ -730,6 +1163,10 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       map.setLayoutProperty('candidate-corridors-casing', 'visibility', candVis)
       if (map.getLayer('candidate-corridors-hit')) {
         map.setLayoutProperty('candidate-corridors-hit', 'visibility', candVis)
+      }
+      if (map.getLayer('corridor-hover-highlight')) {
+        map.setLayoutProperty('corridor-hover-highlight', 'visibility', candVis)
+        map.setFilter('corridor-hover-highlight', ['==', 'candidate_id', ''])
       }
     }
 
@@ -750,16 +1187,81 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       map.setFilter('corridor-selection-highlight', ['==', 'candidate_id', candId])
     }
 
+    // Selected green spaces rings
+    if (map.getLayer('green-spaces-selected-ring')) {
+      const pids = selectedPatchIdsRef.current || []
+      if (pids.length > 0 && showGreenSpacesRef.current) {
+        map.setFilter('green-spaces-selected-ring', ['in', 'id', ...pids])
+        map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'visible')
+      } else {
+        map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'none')
+      }
+    }
+
     // Candidate opacity adjustment when plan exists
     if (map.getLayer('candidate-corridors-line')) {
       const hasSelected = (optimizedPlanRef.current?.selected_candidates?.length || 0) > 0
       map.setPaintProperty(
         'candidate-corridors-line',
         'line-opacity',
-        hasSelected ? 0.35 : 0.95
+        hasSelected ? 0.35 : 0.75
       )
     }
   }
+
+  // Sync green spaces layer visibility
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const applyGreenVisibility = () => {
+      const visibility = currentShowGreenSpaces ? 'visible' : 'none'
+      if (map.getLayer('green-spaces-fill')) {
+        map.setLayoutProperty('green-spaces-fill', 'visibility', visibility)
+        map.setLayoutProperty('green-spaces-line', 'visibility', visibility)
+        if (map.getLayer('green-spaces-labels')) {
+          map.setLayoutProperty('green-spaces-labels', 'visibility', visibility)
+        }
+      }
+      if (map.getLayer('green-spaces-selected-ring')) {
+        const pids = selectedPatchIdsRef.current || []
+        if (pids.length > 0 && currentShowGreenSpaces) {
+          map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'visible')
+        } else {
+          map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'none')
+        }
+      }
+    }
+
+    if (map.isStyleLoaded()) {
+      applyGreenVisibility()
+    } else {
+      map.once('load', applyGreenVisibility)
+    }
+  }, [currentShowGreenSpaces])
+
+  // Sync selected patch rings
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const applySelection = () => {
+      if (map.getLayer('green-spaces-selected-ring')) {
+        if (selectedPatchIds.length > 0 && currentShowGreenSpaces) {
+          map.setFilter('green-spaces-selected-ring', ['in', 'id', ...selectedPatchIds])
+          map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'visible')
+        } else {
+          map.setLayoutProperty('green-spaces-selected-ring', 'visibility', 'none')
+        }
+      }
+    }
+
+    if (map.isStyleLoaded()) {
+      applySelection()
+    } else {
+      map.once('load', applySelection)
+    }
+  }, [selectedPatchIds, currentShowGreenSpaces])
 
   // Sync candidate corridor layer visibility
   useEffect(() => {
@@ -773,6 +1275,10 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         map.setLayoutProperty('candidate-corridors-casing', 'visibility', visibility)
         if (map.getLayer('candidate-corridors-hit')) {
           map.setLayoutProperty('candidate-corridors-hit', 'visibility', visibility)
+        }
+        if (map.getLayer('corridor-hover-highlight')) {
+          map.setLayoutProperty('corridor-hover-highlight', 'visibility', visibility)
+          map.setFilter('corridor-hover-highlight', ['==', 'candidate_id', ''])
         }
       }
     }
@@ -871,8 +1377,49 @@ export const MapContainer: React.FC<MapContainerProps> = ({
 
   return (
     <div className="relative w-full h-full bg-[#F7F6F0] overflow-hidden">
-      {/* Map Canvas */}
+      {/* Map Canvas (Kept mounted in DOM so WebGL context and layers are never lost) */}
       <div ref={mapContainerRef} className="w-full h-full" />
+
+      {/* Embedded Street View Mode Viewer (Ground-Level Imagery Inspection) */}
+      {isStreetViewActive && (
+        <StreetViewModeViewer
+          lat={streetViewTarget.lat}
+          lng={streetViewTarget.lng}
+          zoom={streetViewTarget.zoom}
+          sourceDesc={streetViewTarget.sourceDesc}
+          selectedFeatureName={selectedFeature?.properties?.name || selectedCandidate?.properties?.name || null}
+          selectedType={selectedCandidate ? 'Corridor' : selectedFeature ? 'Green Space' : 'Map Center'}
+          onReturnToMap={handleReturnToMap}
+        />
+      )}
+
+      {/* Visible API Key Notice / Error Banner */}
+      {keyNotice && (
+        <div
+          className={`absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-4 py-2 rounded-lg shadow-lg border text-xs max-w-lg transition-all ${
+            keyNotice.type === 'error'
+              ? 'bg-rose-50 border-rose-300 text-rose-800'
+              : 'bg-amber-50 border-amber-300 text-amber-900'
+          }`}
+          role="alert"
+          id="maptiler-key-notice"
+        >
+          <AlertTriangle
+            className={`w-4 h-4 shrink-0 ${
+              keyNotice.type === 'error' ? 'text-rose-600' : 'text-amber-600'
+            }`}
+          />
+          <div className="flex-1 font-medium">{keyNotice.message}</div>
+          <button
+            onClick={() => setKeyNotice(null)}
+            className="p-1 rounded hover:bg-black/5 text-current opacity-70 hover:opacity-100 cursor-pointer"
+            title="Dismiss notice"
+            aria-label="Dismiss notice"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Floating Map Workstation Controls (Top Left) */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
@@ -890,14 +1437,14 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         {/* Basemap Switcher Selector Pill */}
         <div className="flex items-center bg-white p-0.5 rounded-md border border-[#D5D1C3] shadow-md text-xs">
           <button
-            onClick={() => handleBasemapChange('bright')}
+            onClick={() => handleBasemapChange('streets')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
-              activeBasemap === 'bright'
+              activeBasemap === 'streets'
                 ? 'bg-[#285943] text-white shadow-xs'
                 : 'text-[#607065] hover:text-[#1D2A22]'
             }`}
-            title="Detailed light street map (preferred default)"
-            id="basemap-bright-btn"
+            title="MapTiler Streets v2 (clean light street map)"
+            id="basemap-streets-btn"
           >
             <MapIcon className="w-3 h-3" />
             <span>Street</span>
@@ -910,7 +1457,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
                 ? 'bg-[#285943] text-white shadow-xs'
                 : 'text-[#607065] hover:text-[#1D2A22]'
             }`}
-            title="High-resolution aerial satellite imagery"
+            title="MapTiler Satellite (high-resolution aerial imagery)"
             id="basemap-satellite-btn"
           >
             <Globe className="w-3 h-3" />
@@ -918,21 +1465,68 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           </button>
 
           <button
-            onClick={() => handleBasemapChange('positron')}
+            onClick={() => handleBasemapChange('hybrid')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
-              activeBasemap === 'positron'
+              activeBasemap === 'hybrid'
                 ? 'bg-[#285943] text-white shadow-xs'
                 : 'text-[#607065] hover:text-[#1D2A22]'
             }`}
-            title="Positron muted analytical vector map"
-            id="basemap-positron-btn"
+            title="MapTiler Hybrid (aerial imagery with street labels)"
+            id="basemap-hybrid-btn"
           >
-            <span>Positron</span>
+            <span>Hybrid</span>
+          </button>
+
+          <button
+            onClick={() => handleBasemapChange('dataviz')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+              activeBasemap === 'dataviz' && !isStreetViewActive
+                ? 'bg-[#285943] text-white shadow-xs'
+                : 'text-[#607065] hover:text-[#1D2A22]'
+            }`}
+            title="MapTiler Dataviz Light (muted analytical GIS map)"
+            id="basemap-dataviz-btn"
+          >
+            <span>Muted GIS</span>
+          </button>
+
+          <span className="w-px h-3.5 bg-[#D5D1C3] mx-0.5" />
+
+          {/* Street View Mode Button */}
+          <button
+            onClick={handleActivateStreetView}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+              isStreetViewActive
+                ? 'bg-[#285943] text-white shadow-xs'
+                : 'text-[#607065] hover:text-[#1D2A22]'
+            }`}
+            title="Street-level imagery mode (open & free ground-level photos via Panoramax & Mapillary)"
+            id="basemap-streetview-btn"
+          >
+            <Camera className="w-3 h-3" />
+            <span>Street View</span>
           </button>
         </div>
 
         {/* Quick Layer Toggles */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap max-w-sm">
+          {/* Green Spaces Toggle */}
+          <button
+            onClick={handleToggleGreenSpaces}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border shadow-md transition-all cursor-pointer ${
+              currentShowGreenSpaces
+                ? 'bg-[#EBF2ED] text-[#285943] border-[#285943]'
+                : 'bg-white text-[#607065] border-[#D5D1C3] hover:bg-[#FAF9F5]'
+            }`}
+            title="Toggle verified green spaces"
+            id="map-toggle-green-spaces-btn"
+          >
+            <Trees className="w-3 h-3" />
+            <span>Green Spaces ({greenSpaces?.features?.length || 12})</span>
+            {currentShowGreenSpaces ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+          </button>
+
+          {/* Candidate Corridors Toggle */}
           <button
             onClick={onToggleCandidates}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border shadow-md transition-all cursor-pointer ${
@@ -940,7 +1534,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
                 ? 'bg-[#FAF6ED] text-[#C28B39] border-[#C28B39]'
                 : 'bg-white text-[#607065] border-[#D5D1C3] hover:bg-[#FAF9F5]'
             }`}
-            title="Toggle candidate corridor routes"
+            title="Toggle benchmark candidate corridor routes"
             id="map-toggle-candidates-btn"
           >
             <Route className="w-3 h-3" />
@@ -948,6 +1542,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
             {showCandidates ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
           </button>
 
+          {/* Heat Priority Grid Toggle */}
           {onToggleHeatGrid && (
             <button
               onClick={onToggleHeatGrid}
@@ -967,7 +1562,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         </div>
       </div>
 
-      {/* Map Legend (Bottom Left) */}
+      {/* Map Legend (Bottom Left) - Synchronized with visible layers */}
       <div className="absolute bottom-6 left-4 z-10 bg-white/95 border border-[#D5D1C3] p-3.5 rounded-lg shadow-lg text-xs text-[#4A5850] max-w-xs backdrop-blur-xs">
         <div className="flex items-center gap-2 font-bold text-[#1D2A22] mb-2.5">
           <Layers className="w-3.5 h-3.5 text-[#285943]" />
@@ -975,55 +1570,65 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         </div>
 
         <div className="space-y-2">
-          {/* Selected Corridors Legend Item */}
+          {/* Selected Corridors Legend Item - only if plan exists */}
           {selectedCount > 0 && (
             <div className="flex items-center gap-2">
-              <span className="w-4 h-1.5 rounded bg-[#15803D] border border-[#0F3D1F] shrink-0" />
-              <span className="text-[#15803D] font-bold">
+              <span className="w-4 h-1.5 rounded bg-[#059669] border border-[#064E3B] shrink-0" />
+              <span className="text-[#059669] font-bold">
                 Selected Corridors ({selectedCount} routes, {selectedLengthKm} km)
               </span>
             </div>
           )}
 
-          <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 rounded bg-[#285943]/60 border border-[#1E4332] shrink-0" />
-            <span className="text-[#1D2A22] font-medium">Verified Green Spaces (OSM)</span>
-          </div>
+          {/* Verified Green Spaces - only when enabled */}
+          {currentShowGreenSpaces && (
+            <div className="flex items-center gap-2">
+              <span className="w-3.5 h-3.5 rounded bg-[#285943]/20 border border-[#2D6A4F] shrink-0" />
+              <span className="text-[#1D2A22] font-medium">Verified Green Spaces (OSM)</span>
+            </div>
+          )}
 
-          <div className="flex items-center gap-2">
-            <span className="w-3.5 h-1 border-t-2 border-dashed border-[#C28B39] shrink-0" />
-            <span className={showCandidates ? 'text-[#C28B39] font-medium' : 'text-slate-400'}>
-              {selectedCount > 0 ? 'Unselected Candidates' : 'Candidate Corridors'} ({candidateCount} Street Routes)
-            </span>
-          </div>
+          {/* Candidate Corridors - only when enabled */}
+          {showCandidates && (
+            <div className="flex items-center gap-2">
+              <span className="w-3.5 h-1 border-t-2 border-dashed border-[#D99B38] shrink-0" />
+              <span className="text-[#C28B39] font-medium">
+                {selectedCount > 0 ? 'Unselected Candidates' : 'Candidate Corridors'} ({candidateCount} Routes)
+              </span>
+            </div>
+          )}
 
+          {/* Study Boundary - always visible subtle baseline */}
           <div className="flex items-center gap-2">
-            <span className="w-3.5 h-1 border-t-2 border-dashed border-[#285943] shrink-0" />
+            <span className="w-3.5 h-1 border-t-2 border-dashed border-[#285943]/60 shrink-0" />
             <span className="text-[#607065]">Study Boundary (~131.8 km²)</span>
           </div>
 
-          {/* Heat Grid Legend Bar */}
+          {/* Heat Grid Legend Bar - only when enabled */}
           {showHeatGrid && (
             <div className="pt-2 border-t border-[#E8E5DA]">
               <div className="flex items-center justify-between text-[10px] text-[#607065] mb-1">
                 <span>Heat Vulnerability (Proxy)</span>
                 <span className="font-mono text-rose-700">Cool → High</span>
               </div>
-              <div className="h-2 w-full rounded bg-gradient-to-r from-blue-500 via-cyan-400 via-yellow-400 via-orange-500 to-red-500" />
+              <div className="h-2 w-full rounded bg-gradient-to-r from-blue-500 via-cyan-400 via-yellow-400 via-orange-500 to-red-500 opacity-80" />
+            </div>
+          )}
+
+          {/* Subtle notice when all analytical layers are hidden */}
+          {!currentShowGreenSpaces && !showCandidates && selectedCount === 0 && !showHeatGrid && (
+            <div className="text-[10px] text-[#7A8A7F] italic pt-0.5">
+              Overlays hidden • Enable via top controls
             </div>
           )}
 
           <div className="pt-2 border-t border-[#E8E5DA] text-[10px] text-[#7A8A7F] flex items-center justify-between">
             <span>
               Basemap:{' '}
-              {activeBasemap === 'bright'
-                ? 'OpenFreeMap Bright'
-                : activeBasemap === 'satellite'
-                ? 'Esri World Imagery'
-                : 'OpenFreeMap Positron'}
+              {BASEMAP_PRESETS[activeBasemap]?.name || 'Street'}
             </span>
             <span className="text-[#285943] font-mono text-[9px] uppercase font-bold">
-              {BASEMAP_PRESETS[activeBasemap].type}
+              {BASEMAP_PRESETS[activeBasemap]?.type || 'vector'}
             </span>
           </div>
         </div>
@@ -1031,3 +1636,4 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     </div>
   )
 }
+

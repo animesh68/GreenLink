@@ -239,3 +239,26 @@ export interface HeatGridCollection {
   features: HeatGridFeature[]
 }
 
+export interface CustomPlanningPoint {
+  id: string
+  name: string
+  coordinates: [number, number]
+}
+
+export interface UserDirectedPlanningResponse {
+  selected_patch_ids: string[]
+  selected_endpoints: Array<{
+    id: string
+    name: string
+    type: string
+    area_hectares: number
+    coordinates: [number, number]
+  }>
+  candidate_corridors_geojson: CandidateCorridorCollection
+  candidate_corridors: CandidateCorridorFeature[]
+  total_candidate_routes: number
+  total_candidate_length_km: number
+  total_candidate_cost_inr: number
+  optimization_plan?: OptimizationResponse | null
+}
+

@@ -5,7 +5,8 @@ import type {
   CandidateCorridorFeature,
   CandidateSummary,
   OptimizationResponse,
-  ScenarioComparisonResponse
+  ScenarioComparisonResponse,
+  CustomPlanningPoint
 } from '../types'
 import type { WorkflowStage } from './WorkstationHeader'
 import {
@@ -26,13 +27,15 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
-  AlertCircle,
   Download,
   Play,
   Camera,
   Layers,
-  Database,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  CheckSquare,
+  Square,
+  Plus
 } from 'lucide-react'
 
 interface WorkstationSidebarProps {
@@ -46,8 +49,10 @@ interface WorkstationSidebarProps {
   featureCount: number
   totalAreaHa: number
   candidateSummary: CandidateSummary | null
+  showGreenSpaces?: boolean
   showCandidates: boolean
   showHeatGrid: boolean
+  onToggleGreenSpaces?: () => void
   onToggleCandidates: () => void
   onToggleHeatGrid: () => void
 
@@ -57,6 +62,21 @@ interface WorkstationSidebarProps {
   onClearSelection: () => void
   onSelectCandidateById: (candidateId: string) => void
   onInspectStreet: (candidate: CandidateCorridorFeature) => void
+
+  // User-directed green space selection & routing
+  allPatches: GreenSpaceFeature[]
+  selectedPatchIds: string[]
+  onTogglePatchSelection: (patchId: string) => void
+  onSelectAllPatches: () => void
+  onClearPatchSelection: () => void
+  customPoints: CustomPlanningPoint[]
+  onAddCustomPoint: (point: CustomPlanningPoint) => void
+  onRemoveCustomPoint: (id: string) => void
+  onGenerateCorridors: () => void
+  isGeneratingCorridors: boolean
+  userCorridorCount: number
+  userCorridorLengthKm: number
+  userCorridorCostInr: number
 
   // Optimization planning
   budgetInr: number
@@ -93,8 +113,10 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
   featureCount,
   totalAreaHa,
   candidateSummary,
+  showGreenSpaces = false,
   showCandidates,
   showHeatGrid,
+  onToggleGreenSpaces,
   onToggleCandidates,
   onToggleHeatGrid,
   selectedFeature,
@@ -102,6 +124,19 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
   onClearSelection,
   onSelectCandidateById,
   onInspectStreet,
+  allPatches,
+  selectedPatchIds,
+  onTogglePatchSelection,
+  onSelectAllPatches,
+  onClearPatchSelection,
+  customPoints,
+  onAddCustomPoint,
+  onRemoveCustomPoint,
+  onGenerateCorridors,
+  isGeneratingCorridors,
+  userCorridorCount,
+  userCorridorLengthKm,
+  userCorridorCostInr,
   budgetInr,
   profile,
   isOptimizing,
@@ -118,6 +153,10 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
 }) => {
   const [showExcluded, setShowExcluded] = useState<boolean>(false)
   const [expandedRationaleStep, setExpandedRationaleStep] = useState<number | null>(null)
+  const [showCustomPointForm, setShowCustomPointForm] = useState<boolean>(false)
+  const [customName, setCustomName] = useState<string>('')
+  const [customLat, setCustomLat] = useState<string>('28.5450')
+  const [customLon, setCustomLon] = useState<string>('77.1925')
 
   const meta = optimizedPlan?.metadata
   const obj = optimizedPlan?.objective
@@ -127,6 +166,24 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
   // Budget Validation
   const MIN_FEASIBLE_BUDGET_INR = 3000000 // Minimum single corridor cost is ~₹30.3 Lakhs
   const isBudgetInsufficient = budgetInr < MIN_FEASIBLE_BUDGET_INR
+
+  const totalEndpointsCount = selectedPatchIds.length + customPoints.length
+
+  const handleAddPointSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const lat = parseFloat(customLat)
+    const lon = parseFloat(customLon)
+    if (!customName.trim() || isNaN(lat) || isNaN(lon)) return
+
+    const newPt: CustomPlanningPoint = {
+      id: `pt_${Date.now()}`,
+      name: customName.trim(),
+      coordinates: [lon, lat]
+    }
+    onAddCustomPoint(newPt)
+    setCustomName('')
+    setShowCustomPointForm(false)
+  }
 
   return (
     <div
@@ -153,13 +210,13 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#285943] flex items-center gap-1.5">
                 {activeStage === 'explore' && <Compass className="w-3.5 h-3.5 text-[#285943]" />}
-                {activeStage === 'configure' && <Sliders className="w-3.5 h-3.5 text-[#285943]" />}
+                {activeStage === 'select' && <Sliders className="w-3.5 h-3.5 text-[#285943]" />}
                 {activeStage === 'review' && <CheckCircle2 className="w-3.5 h-3.5 text-[#285943]" />}
                 {activeStage === 'compare' && <GitCompare className="w-3.5 h-3.5 text-[#285943]" />}
                 <span>
-                  {activeStage === 'explore' && 'Workflow 1 • Spatial Baseline & Layers'}
-                  {activeStage === 'configure' && 'Workflow 2 • Optimization Parameters'}
-                  {activeStage === 'review' && 'Workflow 3 • Plan Review & Rationale'}
+                  {activeStage === 'explore' && 'Workflow 1 • Spatial Baseline & Explore'}
+                  {activeStage === 'select' && 'Workflow 2 • Choose Areas to Connect'}
+                  {activeStage === 'review' && 'Workflow 3 • Optimize & Review Plan'}
                   {activeStage === 'compare' && 'Workflow 4 • Scenario Trade-off Analysis'}
                 </span>
               </span>
@@ -173,8 +230,8 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
 
             <h2 className="text-sm font-bold text-[#1D2A22] mt-1 mb-0">
               {activeStage === 'explore' && 'Explore Study Area & Features'}
-              {activeStage === 'configure' && 'Configure Budget & Objective'}
-              {activeStage === 'review' && 'Review Selected Corridors'}
+              {activeStage === 'select' && 'Select Green Spaces to Connect'}
+              {activeStage === 'review' && 'Optimize & Review Green Corridors'}
               {activeStage === 'compare' && 'Compare Strategic Profiles'}
             </h2>
           </div>
@@ -191,7 +248,7 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                   <span className="font-mono text-[10px]">EPSG:32643</span>
                 </div>
                 <div className="text-xs text-[#4A5850] leading-relaxed">
-                  Study boundary comprises ~<strong>{studyArea?.area_approx_km2 || 131.8} km²</strong> encompassing 12 premier urban green anchors and 14 street-corridor candidates.
+                  Study boundary comprises ~<strong>{studyArea?.area_approx_km2 || 131.8} km²</strong> encompassing 12 premier urban green anchors in Delhi.
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-[#E2DFD2]">
                   <div className="bg-white p-2 rounded border border-[#E8E5DA]">
@@ -208,7 +265,7 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                   <div className="bg-white p-2 rounded border border-[#E8E5DA]">
                     <div className="text-[10px] text-[#607065] flex items-center gap-1 font-medium">
                       <Route className="w-3 h-3 text-[#C28B39]" />
-                      <span>Candidates</span>
+                      <span>Benchmark Set</span>
                     </div>
                     <div className="text-sm font-bold text-[#C28B39] mt-0.5">
                       {candidateSummary?.total_candidates || 14} Routes
@@ -224,10 +281,32 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
               <div className="space-y-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#607065] flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-[#285943]" />
-                  <span>Interactive Map Layers</span>
+                  <span>Map Overlays</span>
                 </span>
 
                 <div className="space-y-1.5">
+                  {onToggleGreenSpaces && (
+                    <button
+                      onClick={onToggleGreenSpaces}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
+                        showGreenSpaces
+                          ? 'bg-[#EBF2ED] border-[#285943]/60 text-[#1D2A22]'
+                          : 'bg-white border-[#E2DFD2] text-[#607065] hover:bg-[#FAF9F5]'
+                      }`}
+                      id="sidebar-toggle-green-spaces-btn"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Trees className={`w-3.5 h-3.5 ${showGreenSpaces ? 'text-[#285943]' : 'text-slate-400'}`} />
+                        <span>Verified Green Spaces ({featureCount} Anchors)</span>
+                      </span>
+                      {showGreenSpaces ? (
+                        <Eye className="w-4 h-4 text-[#285943]" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 text-slate-400" />
+                      )}
+                    </button>
+                  )}
+
                   <button
                     onClick={onToggleCandidates}
                     className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
@@ -238,7 +317,7 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                   >
                     <span className="flex items-center gap-2">
                       <Route className={`w-3.5 h-3.5 ${showCandidates ? 'text-[#C28B39]' : 'text-slate-400'}`} />
-                      <span>Candidate Corridors (14 Street Routes)</span>
+                      <span>Benchmark Corridors (14 Standard Routes)</span>
                     </span>
                     {showCandidates ? (
                       <Eye className="w-4 h-4 text-[#C28B39]" />
@@ -257,7 +336,7 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                   >
                     <span className="flex items-center gap-2">
                       <Flame className={`w-3.5 h-3.5 ${showHeatGrid ? 'text-rose-600' : 'text-slate-400'}`} />
-                      <span>Urban Heat Priority Grid (Proxy)</span>
+                      <span>Urban Heat Priority Grid (Thermal Proxy)</span>
                     </span>
                     {showHeatGrid ? (
                       <Eye className="w-4 h-4 text-rose-600" />
@@ -348,39 +427,35 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                     <h3 className="text-xs font-bold text-[#1D2A22] m-0">
                       {selectedFeature.properties.name}
                     </h3>
-                    <div className="text-xs text-[#4A5850] space-y-1 pt-1">
-                      <div className="flex justify-between py-1 border-b border-[#E8E5DA]">
-                        <span className="text-[#607065]">Area:</span>
-                        <span className="font-semibold text-[#285943]">
+                    <div className="grid grid-cols-2 gap-2 text-xs text-[#4A5850] pt-1 border-t border-[#E8E5DA]">
+                      <div>
+                        <span className="text-[10px] text-[#607065] block">Area:</span>
+                        <span className="font-semibold text-[#1D2A22]">
                           {selectedFeature.properties.area_hectares} ha
                         </span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-[#E8E5DA]">
-                        <span className="text-[#607065]">Perimeter:</span>
-                        <span className="font-medium text-[#1D2A22]">
-                          {Math.round(selectedFeature.properties.perimeter_meters).toLocaleString()} m
+                      <div>
+                        <span className="text-[10px] text-[#607065] block">Perimeter:</span>
+                        <span className="font-semibold text-[#1D2A22]">
+                          {Math.round(selectedFeature.properties.perimeter_meters)} m
                         </span>
-                      </div>
-                      <div className="text-[10px] text-[#7A8A7F] italic pt-1">
-                        OpenStreetMap planning anchor polygon.
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="bg-[#FAF9F5] rounded-lg p-4 border border-dashed border-[#D5D1C3] text-center text-xs text-[#607065]">
-                    Click any <strong className="text-[#285943]">green polygon</strong> or{' '}
-                    <strong className="text-[#C28B39]">candidate line</strong> on the map to inspect properties.
+                    Click any <strong className="text-[#285943]">green polygon</strong> on the map to inspect properties.
                   </div>
                 )}
               </div>
 
-              {/* Call-to-action to proceed to Configure stage */}
+              {/* Call-to-action to proceed to Select stage */}
               <div className="pt-2">
                 <button
-                  onClick={() => onStageChange('configure')}
-                  className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg bg-[#FAF9F5] hover:bg-[#F0EDE3] border border-[#D5D1C3] text-xs font-semibold text-[#285943] cursor-pointer transition-all"
+                  onClick={() => onStageChange('select')}
+                  className="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-[#285943] hover:bg-[#1E4332] text-white text-xs font-bold cursor-pointer shadow-sm transition-all"
                 >
-                  <span>Proceed to Configure Optimization</span>
+                  <span>Connect Green Spaces (User-Directed)</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -388,34 +463,271 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
           )}
 
           {/* ============================================================== */}
-          {/* STAGE 2: CONFIGURE OPTIMIZATION WORKSPACE                      */}
+          {/* STAGE 2: SELECT GREEN SPACES TO CONNECT                         */}
           {/* ============================================================== */}
-          {activeStage === 'configure' && (
-            <div className="flex-1 overflow-y-auto p-4 space-y-5">
-              {/* Stale Parameters Alert */}
-              {isStale && (
-                <div className="bg-amber-50 border border-amber-300 rounded-lg p-3 text-xs text-amber-900 flex items-start gap-2 shadow-xs">
-                  <AlertCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold block">Planning Parameters Changed</span>
-                    Your budget or profile has been updated. Run optimizer to recalculate the corridor plan.
-                  </div>
+          {activeStage === 'select' && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Guidance Banner */}
+              <div className="bg-[#FAF9F5] p-3 rounded-lg border border-[#86A68A]/60 text-xs">
+                <div className="flex items-center gap-1.5 font-bold text-[#285943] mb-1">
+                  <Sparkles className="w-3.5 h-3.5 text-[#C28B39]" />
+                  <span>User-Directed Planning</span>
+                </div>
+                <p className="text-[#4A5850] text-[11px] leading-relaxed m-0">
+                  Select 2 or more green spaces on the map or checklist below. GreenLink routes connecting street corridors along Delhi's road network using real typologies and costs.
+                </p>
+              </div>
+
+              {/* Selected Counter & Bulk Actions */}
+              <div className="flex items-center justify-between text-xs pt-1 border-b border-[#E2DFD2] pb-2">
+                <span className="font-bold text-[#1D2A22] flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-[#285943] text-white flex items-center justify-center text-[10px] font-mono">
+                    {totalEndpointsCount}
+                  </span>
+                  <span>Selected Anchors</span>
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={onSelectAllPatches}
+                    className="text-[11px] text-[#285943] hover:underline font-medium cursor-pointer"
+                  >
+                    Select All
+                  </button>
+                  <span className="text-slate-300">|</span>
+                  <button
+                    onClick={onClearPatchSelection}
+                    className="text-[11px] text-[#C28B39] hover:underline font-medium cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              {/* Selected Tags Chips */}
+              {totalEndpointsCount > 0 && (
+                <div className="flex flex-wrap gap-1.5 p-2 bg-[#F7F6F0] rounded-lg border border-[#E2DFD2]">
+                  {selectedPatchIds.map((pid) => {
+                    const p = allPatches.find(
+                      (f) => f.properties.id === pid || (f as any).id === pid
+                    )
+                    const name = p?.properties.name || pid
+                    return (
+                      <span
+                        key={pid}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium bg-white text-[#285943] px-2 py-0.5 rounded border border-[#86A68A]/60 shadow-2xs"
+                      >
+                        <span className="max-w-32 truncate">{name}</span>
+                        <button
+                          onClick={() => onTogglePatchSelection(pid)}
+                          className="hover:text-rose-600 font-bold ml-0.5 cursor-pointer text-xs"
+                          title="Remove selection"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )
+                  })}
+                  {customPoints.map((cp) => (
+                    <span
+                      key={cp.id}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium bg-[#FAF6ED] text-[#C28B39] px-2 py-0.5 rounded border border-[#C28B39]/50 shadow-2xs"
+                    >
+                      <span className="max-w-32 truncate">{cp.name}</span>
+                      <button
+                        onClick={() => onRemoveCustomPoint(cp.id)}
+                        className="hover:text-rose-600 font-bold ml-0.5 cursor-pointer text-xs"
+                        title="Remove custom point"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
                 </div>
               )}
 
-              {/* 1. Budget Cap Configuration */}
-              <div className="space-y-3">
+              {/* Green Spaces Checklist */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#607065] block">
+                  Available Green Space Anchors ({allPatches.length})
+                </span>
+                <div className="space-y-1 max-h-56 overflow-y-auto pr-1">
+                  {allPatches.map((patch) => {
+                    const pid = patch.properties.id || (patch as any).id
+                    const isChecked = selectedPatchIds.includes(pid)
+                    return (
+                      <div
+                        key={pid}
+                        onClick={() => onTogglePatchSelection(pid)}
+                        className={`flex items-center justify-between p-2 rounded-lg border text-xs cursor-pointer transition-all ${
+                          isChecked
+                            ? 'bg-[#EBF2ED] border-[#86A68A] text-[#1D2A22]'
+                            : 'bg-white border-[#E2DFD2] text-[#4A5850] hover:bg-[#FAF9F5]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          {isChecked ? (
+                            <CheckSquare className="w-4 h-4 text-[#285943] shrink-0" />
+                          ) : (
+                            <Square className="w-4 h-4 text-slate-400 shrink-0" />
+                          )}
+                          <span className="truncate font-medium">{patch.properties.name}</span>
+                        </div>
+                        <span className="text-[10px] text-[#607065] font-mono shrink-0 ml-1">
+                          {patch.properties.area_hectares.toFixed(0)} ha
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Add Custom Planning Point Collapsible */}
+              <div className="pt-2 border-t border-[#E2DFD2]">
+                <button
+                  onClick={() => setShowCustomPointForm(!showCustomPointForm)}
+                  className="w-full flex items-center justify-between text-xs font-semibold text-[#285943] hover:underline cursor-pointer py-1"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Custom Planning Location</span>
+                  </span>
+                  {showCustomPointForm ? (
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  )}
+                </button>
+
+                {showCustomPointForm && (
+                  <form onSubmit={handleAddPointSubmit} className="mt-2 p-3 rounded-lg bg-[#FAF9F5] border border-[#E2DFD2] space-y-2 text-xs">
+                    <div>
+                      <label className="text-[10px] font-bold text-[#607065] block mb-1">
+                        Location / Landmark Name:
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. IIT Delhi Main Gate"
+                        value={customName}
+                        onChange={(e) => setCustomName(e.target.value)}
+                        className="w-full p-1.5 rounded border border-[#D5D1C3] bg-white text-xs"
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-[#607065] block mb-1">Latitude:</label>
+                        <input
+                          type="text"
+                          value={customLat}
+                          onChange={(e) => setCustomLat(e.target.value)}
+                          className="w-full p-1.5 rounded border border-[#D5D1C3] bg-white text-xs font-mono"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-[#607065] block mb-1">Longitude:</label>
+                        <input
+                          type="text"
+                          value={customLon}
+                          onChange={(e) => setCustomLon(e.target.value)}
+                          className="w-full p-1.5 rounded border border-[#D5D1C3] bg-white text-xs font-mono"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full py-1.5 rounded bg-[#285943] text-white text-xs font-semibold hover:bg-[#1E4332] cursor-pointer mt-1"
+                    >
+                      Add Landmark Anchor
+                    </button>
+                  </form>
+                )}
+              </div>
+
+              {/* Route Estimation & Generate Action */}
+              <div className="pt-3 border-t border-[#E2DFD2] space-y-2">
+                <div className="text-[11px] text-center">
+                  {totalEndpointsCount < 2 ? (
+                    <span className="text-amber-800 font-medium">
+                      Select at least 2 green spaces to generate connecting corridors.
+                    </span>
+                  ) : (
+                    <span className="text-[#285943] font-semibold">
+                      Ready to route {(totalEndpointsCount * (totalEndpointsCount - 1)) / 2} street corridors.
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  onClick={onGenerateCorridors}
+                  disabled={isGeneratingCorridors || totalEndpointsCount < 2}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#285943] hover:bg-[#1E4332] text-white text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  id="generate-corridors-btn"
+                >
+                  <Sparkles className={`w-4 h-4 ${isGeneratingCorridors ? 'animate-spin' : 'text-[#86A68A]'}`} />
+                  <span>
+                    {isGeneratingCorridors
+                      ? 'Routing Street Network Corridors...'
+                      : 'Generate Corridor Recommendations'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* STAGE 3: OPTIMIZE & REVIEW PLAN                                */}
+          {/* ============================================================== */}
+          {activeStage === 'review' && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Generated Candidates Overview */}
+              <div className="bg-[#FAF9F5] p-3 rounded-lg border border-[#C28B39]/50 text-xs">
+                <div className="flex items-center justify-between font-bold text-[#1D2A22] mb-1">
+                  <span className="flex items-center gap-1.5 text-[#C28B39]">
+                    <Route className="w-3.5 h-3.5" />
+                    <span>Candidate Corridors Pool</span>
+                  </span>
+                  <span className="font-mono text-xs text-[#285943]">
+                    {userCorridorCount > 0 ? userCorridorCount : candidateSummary?.total_candidates || 14} Routes
+                  </span>
+                </div>
+                <div className="text-[11px] text-[#607065] flex items-center justify-between">
+                  <span>
+                    Total Network:{' '}
+                    <strong>
+                      {userCorridorCount > 0
+                        ? `${userCorridorLengthKm.toFixed(1)} km`
+                        : `${candidateSummary?.total_length_km || 46.95} km`}
+                    </strong>
+                  </span>
+                  <span>
+                    Pool Cost:{' '}
+                    <strong className="text-[#C28B39]">
+                      ₹
+                      {(
+                        (userCorridorCount > 0
+                          ? userCorridorCostInr
+                          : candidateSummary?.total_provisional_cost_inr || 204368000) / 10000000
+                      ).toFixed(2)}{' '}
+                      Cr
+                    </strong>
+                  </span>
+                </div>
+              </div>
+
+              {/* Optimization Parameters Controls */}
+              <div className="bg-white p-3.5 rounded-lg border border-[#E2DFD2] space-y-3 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold uppercase tracking-wider text-[#285943] flex items-center gap-1.5">
                     <Coins className="w-3.5 h-3.5 text-[#C28B39]" />
                     <span>Municipal Budget Cap</span>
                   </label>
-                  <span className="text-sm font-extrabold text-[#285943] font-mono bg-[#EBF2ED] px-2.5 py-0.5 rounded border border-[#86A68A]/60">
+                  <span className="text-xs font-extrabold text-[#285943] font-mono bg-[#EBF2ED] px-2 py-0.5 rounded border border-[#86A68A]/60">
                     ₹{budgetInCrores} Cr
                   </span>
                 </div>
 
-                {/* Range Slider */}
                 <input
                   type="range"
                   min="5000000"
@@ -427,17 +739,16 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                   id="budget-slider"
                 />
 
-                {/* Preset Chips */}
-                <div className="flex flex-wrap gap-1.5 pt-1">
+                <div className="flex flex-wrap gap-1">
                   {BUDGET_PRESETS.map((preset) => {
                     const isSelected = budgetInr === preset.value
                     return (
                       <button
                         key={preset.value}
                         onClick={() => onBudgetChange(preset.value)}
-                        className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                        className={`px-2 py-0.5 text-[11px] font-medium rounded transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-[#285943] text-white font-bold shadow-xs'
+                            ? 'bg-[#285943] text-white font-bold shadow-2xs'
                             : 'bg-[#FAF9F5] text-[#4A5850] hover:bg-[#F0EDE3] border border-[#D5D1C3]'
                         }`}
                       >
@@ -447,201 +758,107 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                   })}
                 </div>
 
-                {/* Insufficient Budget Warning */}
-                {isBudgetInsufficient && (
-                  <div className="bg-rose-50 border border-rose-300 rounded-lg p-2.5 text-xs text-rose-800 flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-semibold block">Budget Insufficient</span>
-                      Cap is lower than the lowest-cost corridor (~₹30.3 Lakhs). Please allocate at least ₹50 Lakhs (₹0.50 Cr) to enable corridor selection.
+                {/* Profile Toggle */}
+                <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-[#E8E5DA]">
+                  <button
+                    onClick={() => onProfileChange('connectivity_first')}
+                    className={`p-2 rounded border text-[11px] font-semibold text-left transition-all cursor-pointer ${
+                      profile === 'connectivity_first'
+                        ? 'bg-[#FAF9F5] border-[#285943] text-[#285943] ring-1 ring-[#285943]'
+                        : 'bg-white border-[#E2DFD2] text-[#607065] hover:bg-[#FAF9F5]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1">
+                      <Network className="w-3 h-3 text-[#285943]" />
+                      <span>Connectivity</span>
                     </div>
-                  </div>
-                )}
-              </div>
+                    <span className="text-[9px] text-[#7A8A7F] font-normal block mt-0.5">IIC distance model</span>
+                  </button>
 
-              {/* 2. Planning Objective Profile Selector */}
-              <div className="space-y-3 pt-3 border-t border-[#E2DFD2]">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#285943] block">
-                  Select Optimization Strategy
-                </label>
-
-                {/* Profile Radio Card A: Connectivity First */}
-                <div
-                  onClick={() => onProfileChange('connectivity_first')}
-                  className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
-                    profile === 'connectivity_first'
-                      ? 'bg-[#FAF9F5] border-[#285943] ring-1 ring-[#285943] shadow-xs'
-                      : 'bg-white border-[#E2DFD2] hover:bg-[#FAF9F5]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <Network className="w-4 h-4 text-[#285943]" />
-                      <span className="text-xs font-bold text-[#1D2A22]">
-                        1. Connectivity-First
-                      </span>
+                  <button
+                    onClick={() => onProfileChange('heat_priority_first')}
+                    className={`p-2 rounded border text-[11px] font-semibold text-left transition-all cursor-pointer ${
+                      profile === 'heat_priority_first'
+                        ? 'bg-[#FAF6ED] border-[#C28B39] text-[#C28B39] ring-1 ring-[#C28B39]'
+                        : 'bg-white border-[#E2DFD2] text-[#607065] hover:bg-[#FAF9F5]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1">
+                      <Flame className="w-3 h-3 text-[#C28B39]" />
+                      <span>Heat Priority</span>
                     </div>
-                    <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-[#EBF2ED] text-[#285943] border border-[#86A68A]/60">
-                      IIC_dist
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-[#4A5850] leading-relaxed m-0">
-                    Prioritizes regional ecological graph cohesion using the distance-decay Integral Index of Connectivity. Connects fragmented park components to maximize habitat mobility.
-                  </p>
+                    <span className="text-[9px] text-[#7A8A7F] font-normal block mt-0.5">50m buffer coverage</span>
+                  </button>
                 </div>
 
-                {/* Profile Radio Card B: Heat Priority First */}
-                <div
-                  onClick={() => onProfileChange('heat_priority_first')}
-                  className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
-                    profile === 'heat_priority_first'
-                      ? 'bg-[#FAF6ED] border-[#C28B39] ring-1 ring-[#C28B39] shadow-xs'
-                      : 'bg-white border-[#E2DFD2] hover:bg-[#FAF9F5]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <Flame className="w-4 h-4 text-[#C28B39]" />
-                      <span className="text-xs font-bold text-[#1D2A22]">
-                        2. Heat-Priority-First
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-[#FAF6ED] text-[#C28B39] border border-[#C28B39]/50">
-                      Heat Proxy
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-[#4A5850] leading-relaxed m-0">
-                    Prioritizes 50m corridor physical buffers traversing high-vulnerability urban heat island cells. Maximizes thermal mitigation proxy area per rupee spent.
-                  </p>
-                </div>
-              </div>
-
-              {/* 3. Action: Run Optimizer */}
-              <div className="pt-2">
+                {/* Run Optimizer Button */}
                 <button
                   onClick={onOptimize}
                   disabled={isOptimizing || isBudgetInsufficient}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#285943] hover:bg-[#1E4332] text-white text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#285943] hover:bg-[#1E4332] text-white text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   id="run-optimizer-btn"
                 >
-                  <Play className={`w-4 h-4 ${isOptimizing ? 'animate-spin' : ''}`} />
-                  <span>
-                    {isOptimizing ? 'Computing Optimal Plan...' : 'Run Greedy Optimizer'}
-                  </span>
+                  <Play className={`w-3.5 h-3.5 ${isOptimizing ? 'animate-spin' : ''}`} />
+                  <span>{isOptimizing ? 'Optimizing Corridor Set...' : 'Run Greedy Optimizer'}</span>
                 </button>
-                <div className="text-[10px] text-[#7A8A7F] text-center mt-2">
-                  Deterministic greedy knapsack algorithm • Response in &lt;50ms
-                </div>
               </div>
-            </div>
-          )}
 
-          {/* ============================================================== */}
-          {/* STAGE 3: REVIEW PLAN WORKSPACE                                 */}
-          {/* ============================================================== */}
-          {activeStage === 'review' && (
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Optimized Results KPIs */}
               {optimizedPlan ? (
                 <>
-                  {/* Stale Warning if parameters changed */}
-                  {isStale && (
-                    <div className="bg-amber-50 border border-amber-300 rounded-lg p-2.5 text-xs text-amber-900 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-                        <span>Parameters modified</span>
-                      </div>
-                      <button
-                        onClick={onOptimize}
-                        className="text-[10px] font-bold text-[#285943] underline cursor-pointer"
-                      >
-                        Refresh Plan
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Primary KPI Summary Cards */}
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {/* Primary Objective KPI */}
-                    <div className="bg-[#FAF9F5] p-3 rounded-lg border border-[#86A68A]/60">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-[#FAF9F5] p-2.5 rounded-lg border border-[#86A68A]/60">
                       <div className="text-[10px] uppercase font-bold text-[#285943] flex items-center gap-1">
                         {meta?.profile === 'connectivity_first' ? (
                           <>
                             <Network className="w-3 h-3" />
-                            <span>Connectivity (IIC)</span>
+                            <span>Connectivity</span>
                           </>
                         ) : (
                           <>
                             <Flame className="w-3 h-3 text-[#C28B39]" />
-                            <span>Heat-Priority Area</span>
+                            <span>Heat Coverage</span>
                           </>
                         )}
                       </div>
-                      <div className="text-xl font-extrabold text-[#1D2A22] mt-1">
-                        {obj?.optimized_value.toFixed(2)}
-                        <span className="text-[11px] font-normal text-[#607065] ml-1">
-                          {obj?.units}
-                        </span>
+                      <div className="text-lg font-extrabold text-[#1D2A22] mt-0.5">
+                        {obj?.optimized_value.toFixed(2)}{' '}
+                        <span className="text-[10px] font-normal text-[#607065]">{obj?.units}</span>
                       </div>
-                      <div className="text-[11px] text-[#285943] font-semibold mt-0.5">
+                      <div className="text-[10px] text-[#285943] font-semibold">
                         +{obj?.gain_absolute.toFixed(2)} gain
-                        {obj?.gain_percent ? ` (+${obj.gain_percent.toFixed(1)}%)` : ''}
                       </div>
                     </div>
 
-                    {/* Budget Spent KPI */}
-                    <div className="bg-[#FAF9F5] p-3 rounded-lg border border-[#E2DFD2]">
+                    <div className="bg-[#FAF9F5] p-2.5 rounded-lg border border-[#E2DFD2]">
                       <div className="text-[10px] uppercase font-bold text-[#607065] flex items-center gap-1">
                         <Coins className="w-3 h-3 text-[#C28B39]" />
                         <span>Budget Spent</span>
                       </div>
-                      <div className="text-xl font-extrabold text-[#1D2A22] mt-1">
-                        ₹{((meta?.total_spent_inr || 0) / 10000000).toFixed(2)}
-                        <span className="text-[11px] font-normal text-[#607065] ml-1">Cr</span>
+                      <div className="text-lg font-extrabold text-[#1D2A22] mt-0.5">
+                        ₹{((meta?.total_spent_inr || 0) / 10000000).toFixed(2)}{' '}
+                        <span className="text-[10px] font-normal text-[#607065]">Cr</span>
                       </div>
-                      <div className="text-[11px] text-[#285943] font-semibold mt-0.5">
+                      <div className="text-[10px] text-[#285943] font-semibold">
                         {meta?.budget_utilization_pct.toFixed(1)}% utilized
                       </div>
                     </div>
 
-                    {/* Secondary Metric Card */}
-                    <div className="bg-[#FAF9F5] p-3 rounded-lg border border-[#E2DFD2]">
-                      <div className="text-[10px] uppercase font-bold text-[#607065] flex items-center gap-1">
-                        {meta?.profile === 'connectivity_first' ? (
-                          <>
-                            <Flame className="w-3 h-3 text-[#C28B39]" />
-                            <span>Heat Proxy Gain</span>
-                          </>
-                        ) : (
-                          <>
-                            <Network className="w-3 h-3 text-[#285943]" />
-                            <span>IIC Score Gain</span>
-                          </>
-                        )}
+                    <div className="col-span-2 bg-[#FAF9F5] p-2.5 rounded-lg border border-[#E2DFD2] flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-[#285943]" />
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-[#607065] block">
+                            Ecological Fragmentation
+                          </span>
+                          <span className="text-xs font-bold text-[#1D2A22]">
+                            {sec?.connected_components_baseline ?? 0} → {sec?.connected_components_optimized ?? 0} isolated clusters
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-base font-bold text-[#1D2A22] mt-1">
-                        {meta?.profile === 'connectivity_first'
-                          ? `${(sec?.heat_priority_coverage_ha ?? sec?.heat_mitigation_coverage_ha ?? 0).toFixed(1)} ha`
-                          : `${sec?.connectivity_index_iic.toFixed(2)} pts`}
-                      </div>
-                      <div className="text-[10px] text-[#7A8A7F] mt-0.5">
-                        {meta?.profile === 'connectivity_first'
-                          ? `${(sec?.corridor_buffer_physical_ha ?? sec?.canopy_buffer_physical_ha ?? 0).toFixed(1)} ha 50m buffer`
-                          : `+${sec?.connectivity_index_gain.toFixed(2)} pts gain`}
-                      </div>
-                    </div>
-
-                    {/* Fragmentation Card */}
-                    <div className="bg-[#FAF9F5] p-3 rounded-lg border border-[#E2DFD2]">
-                      <div className="text-[10px] uppercase font-bold text-[#607065] flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3 text-[#285943]" />
-                        <span>Fragmentation</span>
-                      </div>
-                      <div className="text-base font-bold text-[#1D2A22] mt-1">
-                        {sec?.connected_components_baseline} → {sec?.connected_components_optimized}
-                      </div>
-                      <div className="text-[11px] text-[#285943] font-semibold mt-0.5">
-                        -{sec?.connected_components_reduction} isolated clusters
-                      </div>
+                      <span className="text-xs font-bold text-[#285943] font-mono bg-[#EBF2ED] px-2 py-0.5 rounded border border-[#86A68A]/60">
+                        -{sec?.connected_components_reduction ?? 0} clusters
+                      </span>
                     </div>
                   </div>
 
@@ -667,7 +884,7 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                           <div
                             key={cand.candidate_id}
                             onClick={() => onSelectCandidateById(cand.candidate_id)}
-                            className={`rounded-lg p-3 transition-all cursor-pointer border ${
+                            className={`rounded-lg p-2.5 transition-all cursor-pointer border ${
                               isSelectedInMap
                                 ? 'bg-[#FAF9F5] border-[#285943] ring-1 ring-[#285943] shadow-xs'
                                 : 'bg-white border-[#E2DFD2] hover:bg-[#FAF9F5]'
@@ -678,7 +895,7 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                                 <span className="text-[10px] font-mono font-bold bg-[#EBF2ED] text-[#285943] px-1.5 py-0.5 rounded border border-[#86A68A]/60">
                                   #{cand.step}
                                 </span>
-                                <span className="text-xs font-bold text-[#1D2A22]">
+                                <span className="text-xs font-bold text-[#1D2A22] max-w-44 truncate">
                                   {cand.name}
                                 </span>
                               </div>
@@ -688,53 +905,84 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                             </div>
 
                             <div className="text-[11px] text-[#607065] mt-1 flex items-center gap-1">
-                              <span className="text-[#285943] font-medium">{cand.source_name}</span>
+                              <span className="text-[#285943] font-medium truncate max-w-32">{cand.source_name}</span>
                               <span className="text-slate-400">↔</span>
-                              <span className="text-[#285943] font-medium">{cand.target_name}</span>
-                              <span className="text-[#7A8A7F] ml-auto font-mono">
+                              <span className="text-[#285943] font-medium truncate max-w-32">{cand.target_name}</span>
+                              <span className="text-[#7A8A7F] ml-auto font-mono text-[10px]">
                                 {cand.length_km} km
                               </span>
                             </div>
 
-                            <div className="flex items-center justify-between text-[10px] text-[#607065] mt-2 pt-2 border-t border-[#E8E5DA]">
+                            <div className="flex items-center justify-between text-[10px] text-[#607065] mt-1.5 pt-1.5 border-t border-[#E8E5DA]">
                               <div>
                                 Benefit: <strong className="text-[#1D2A22]">+{cand.marginal_benefit.toFixed(2)}</strong>
-                              </div>
-                              <div>
-                                Efficiency: <strong className="text-[#285943] font-mono">{cand.efficiency_ratio.toFixed(2)}</strong>
                               </div>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   setExpandedRationaleStep(isExpanded ? null : cand.step)
                                 }}
-                                className="text-[#285943] hover:text-[#1D2A22] p-0.5 cursor-pointer"
-                                title="Toggle selection rationale"
+                                className="text-[#285943] hover:text-[#1D2A22] p-0.5 cursor-pointer text-[10px] font-medium flex items-center gap-0.5"
                               >
-                                {isExpanded ? (
-                                  <ChevronUp className="w-3.5 h-3.5" />
-                                ) : (
-                                  <ChevronDown className="w-3.5 h-3.5" />
-                                )}
+                                <span>Rationale</span>
+                                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                               </button>
                             </div>
 
                             {/* Expanded Selection Rationale */}
                             {isExpanded && (
                               <div className="mt-2 p-2 rounded bg-[#FAF9F5] border border-[#E2DFD2] text-[10px] text-[#4A5850] leading-relaxed">
-                                <span className="text-[#285943] font-semibold block mb-0.5">
-                                  Selection Rationale:
-                                </span>
                                 {cand.selection_rationale}
                               </div>
                             )}
+
+                            {/* Street Imagery Inspection Button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                const feat = candidateSummary ? {
+                                  type: 'Feature' as const,
+                                  id: cand.candidate_id,
+                                  properties: {
+                                    candidate_id: cand.candidate_id,
+                                    name: cand.name,
+                                    source_anchor_id: cand.source_anchor_id,
+                                    source_name: cand.source_name,
+                                    target_anchor_id: cand.target_anchor_id,
+                                    target_name: cand.target_name,
+                                    length_m: cand.length_km * 1000,
+                                    length_km: cand.length_km,
+                                    euclidean_distance_m: cand.length_km * 850,
+                                    circuitousness_ratio: 1.15,
+                                    dominant_typology: 'secondary',
+                                    road_types_breakdown_m: {},
+                                    primary_streets: 'Urban Street Alignment',
+                                    estimated_cost_inr: cand.estimated_cost_inr,
+                                    cost_status: 'calculated',
+                                    route_method: 'Dijkstra',
+                                    network_source: 'OSM',
+                                    status: 'selected',
+                                    planning_notes: cand.selection_rationale
+                                  },
+                                  geometry: {
+                                    type: 'LineString' as const,
+                                    coordinates: [[77.215, 28.585], [77.225, 28.575]]
+                                  }
+                                } : null
+                                if (feat) onInspectStreet(feat as any)
+                              }}
+                              className="w-full flex items-center justify-center gap-1.5 px-2 py-1 rounded bg-[#F7F6F0] hover:bg-[#EAE7DC] text-[#285943] text-[10px] font-semibold border border-[#D5D1C3] transition-all cursor-pointer mt-1.5"
+                            >
+                              <Camera className="w-3 h-3 text-[#285943]" />
+                              <span>Inspect Street Imagery</span>
+                            </button>
                           </div>
                         )
                       })}
                     </div>
                   </div>
 
-                  {/* Excluded Candidates Collapsible List */}
+                  {/* Excluded Candidates Accordion */}
                   {optimizedPlan.excluded_candidates.length > 0 && (
                     <div className="pt-2 border-t border-[#E2DFD2]">
                       <button
@@ -752,21 +1000,22 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                       </button>
 
                       {showExcluded && (
-                        <div className="space-y-1.5 mt-2">
-                          {optimizedPlan.excluded_candidates.map((exc) => (
+                        <div className="mt-2 space-y-1.5">
+                          {optimizedPlan.excluded_candidates.map((cand) => (
                             <div
-                              key={exc.candidate_id}
-                              onClick={() => onSelectCandidateById(exc.candidate_id)}
-                              className="p-2.5 rounded bg-[#FAF9F5] border border-[#E2DFD2] text-xs hover:border-[#D5D1C3] cursor-pointer"
+                              key={cand.candidate_id}
+                              className="p-2 rounded bg-[#FAF9F5] border border-[#E8E5DA] text-[11px]"
                             >
                               <div className="flex items-center justify-between">
-                                <span className="font-semibold text-[#4A5850]">{exc.name}</span>
-                                <span className="font-mono text-[10px] text-[#7A8A7F]">
-                                  ₹{(exc.estimated_cost_inr / 100000).toFixed(1)}L
+                                <span className="font-semibold text-[#1D2A22] truncate max-w-44">
+                                  {cand.name}
+                                </span>
+                                <span className="text-[10px] font-mono text-[#607065]">
+                                  ₹{(cand.estimated_cost_inr / 100000).toFixed(1)}L
                                 </span>
                               </div>
-                              <div className="text-[10px] text-[#C28B39] mt-1 leading-normal">
-                                {exc.exclusion_reason}
+                              <div className="text-[10px] text-rose-700 mt-0.5">
+                                {cand.exclusion_reason}
                               </div>
                             </div>
                           ))}
@@ -775,28 +1024,23 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
                     </div>
                   )}
 
-                  {/* Export Actions */}
+                  {/* Plan Export Action */}
                   <div className="pt-2 border-t border-[#E2DFD2]">
                     <button
                       onClick={onExportPlan}
-                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#FAF9F5] hover:bg-[#F0EDE3] border border-[#D5D1C3] text-xs font-semibold text-[#285943] transition-all cursor-pointer shadow-xs"
-                      title="Download GeoJSON and JSON planning brief"
+                      className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg bg-white hover:bg-[#FAF9F5] border border-[#285943] text-xs font-bold text-[#285943] cursor-pointer shadow-2xs transition-all"
+                      id="export-plan-btn"
                     >
-                      <Download className="w-3.5 h-3.5 text-[#285943]" />
-                      <span>Export Plan (GeoJSON & Planning Brief)</span>
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Export Plan (GeoJSON & Brief)</span>
                     </button>
                   </div>
                 </>
               ) : (
-                <div className="text-center py-12 text-xs text-[#607065] space-y-3">
-                  <Route className="w-8 h-8 text-[#86A68A] mx-auto" />
-                  <p>No optimization plan generated yet.</p>
-                  <button
-                    onClick={() => onStageChange('configure')}
-                    className="px-3 py-1.5 bg-[#285943] text-white rounded-md font-semibold text-xs cursor-pointer"
-                  >
-                    Go to Configure
-                  </button>
+                <div className="bg-[#FAF9F5] rounded-lg p-4 border border-dashed border-[#D5D1C3] text-center text-xs text-[#607065] space-y-2">
+                  <p className="m-0">
+                    Click <strong>"Run Greedy Optimizer"</strong> above to compute the optimal corridor set for this budget.
+                  </p>
                 </div>
               )}
             </div>
@@ -807,146 +1051,114 @@ export const WorkstationSidebar: React.FC<WorkstationSidebarProps> = ({
           {/* ============================================================== */}
           {activeStage === 'compare' && (
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              <div className="bg-[#FAF9F5] p-3 rounded-lg border border-[#E2DFD2] text-xs text-[#4A5850]">
-                <div className="font-bold text-[#285943] mb-1">
-                  Strategic Trade-off Analysis at ₹{budgetInCrores} Cr
+              <div className="bg-[#FAF9F5] p-3 rounded-lg border border-[#E2DFD2] text-xs">
+                <div className="flex items-center justify-between text-[#607065] mb-1">
+                  <span className="font-semibold text-[#285943]">Strategic Trade-off Analysis</span>
+                  <span className="font-mono text-[10px]">₹{budgetInCrores} Cr Budget</span>
                 </div>
-                <p className="m-0 leading-relaxed text-[11px] text-[#607065]">
-                  Compares Connectivity-First (IIC network graph) against Heat-Priority-First (thermal vulnerability cells) to reveal consensus corridors vs divergent trade-offs.
+                <p className="text-[11px] text-[#4A5850] leading-relaxed m-0">
+                  Compares the structural ecological graph cohesion strategy against the thermal mitigation proxy strategy under identical municipal capital constraints.
                 </p>
               </div>
 
-              {!scenarioComparison ? (
-                <div className="text-center py-8 space-y-3">
-                  <button
-                    onClick={onCompare}
-                    disabled={isComparing}
-                    className="px-4 py-2.5 rounded-lg bg-[#285943] hover:bg-[#1E4332] text-white text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {isComparing ? 'Calculating Comparison...' : 'Generate Scenario Comparison'}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Strategic Narrative */}
-                  <div className="p-3 rounded-lg bg-[#FAF9F5] border border-[#86A68A]/60 text-xs text-[#1D2A22] leading-relaxed">
-                    <span className="font-bold text-[#285943] block mb-1">
-                      Automated Strategic Synthesis
+              {scenarioComparison ? (
+                <>
+                  {/* Consensus Overlap Corridors */}
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#285943] flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#285943]" />
+                      <span>Consensus High-Priority Corridors ({scenarioComparison.overlap_candidate_ids.length})</span>
                     </span>
-                    <p className="m-0 text-[11px] text-[#4A5850]">
+                    <div className="bg-[#EBF2ED] p-2.5 rounded-lg border border-[#86A68A]/60 text-xs">
+                      <div className="text-[11px] text-[#285943] font-semibold mb-1">
+                        Selected by Both Strategies:
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {scenarioComparison.overlap_candidate_ids.map((cid) => (
+                          <span
+                            key={cid}
+                            className="text-[10px] font-mono px-2 py-0.5 rounded bg-white text-[#285943] border border-[#86A68A]/50 font-bold"
+                          >
+                            {cid}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Divergent Routes Comparison */}
+                  <div className="space-y-2 pt-2 border-t border-[#E2DFD2]">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#607065] flex items-center gap-1.5">
+                      <GitCompare className="w-3.5 h-3.5 text-[#C28B39]" />
+                      <span>Strategy Divergence</span>
+                    </span>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-2.5 rounded-lg bg-white border border-[#285943]/40">
+                        <div className="text-[10px] uppercase font-bold text-[#285943] mb-1">
+                          Connectivity Only
+                        </div>
+                        <div className="text-[10px] text-[#607065] space-y-1">
+                          {scenarioComparison.divergent_connectivity_ids.map((id) => (
+                            <div key={id} className="font-mono bg-[#FAF9F5] px-1 py-0.5 rounded">
+                              {id}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-white border border-[#C28B39]/40">
+                        <div className="text-[10px] uppercase font-bold text-[#C28B39] mb-1">
+                          Heat Priority Only
+                        </div>
+                        <div className="text-[10px] text-[#607065] space-y-1">
+                          {scenarioComparison.divergent_heat_ids.map((id) => (
+                            <div key={id} className="font-mono bg-[#FAF6ED] px-1 py-0.5 rounded">
+                              {id}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary Narrative */}
+                  <div className="p-3 rounded-lg bg-[#FAF9F5] border border-[#E2DFD2] text-xs space-y-1">
+                    <span className="font-bold text-[#1D2A22] block">Evaluation Synthesis:</span>
+                    <p className="text-[11px] text-[#4A5850] leading-relaxed m-0">
                       {scenarioComparison.summary_narrative}
                     </p>
                   </div>
 
-                  {/* Consensus Corridors (Shared) */}
-                  <div className="p-3 rounded-lg bg-[#EBF2ED] border border-[#86A68A]/60 text-xs">
-                    <div className="font-bold text-[#285943] mb-1 flex items-center justify-between">
-                      <span>Shared Consensus Routes</span>
-                      <span className="font-mono text-[10px] bg-white px-1.5 py-0.5 rounded border border-[#86A68A]/50">
-                        {scenarioComparison.overlap_candidate_ids.length} Corridors
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {scenarioComparison.overlap_candidate_ids.map((id) => (
-                        <button
-                          key={id}
-                          onClick={() => onSelectCandidateById(id)}
-                          className="px-2 py-0.5 bg-white text-[#285943] font-mono font-bold text-[10px] rounded border border-[#86A68A]/50 hover:bg-[#FAF9F5] cursor-pointer"
-                        >
-                          {id}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Side by Side Primary Metrics Table */}
-                  <div className="border border-[#E2DFD2] rounded-lg overflow-hidden text-xs">
-                    <div className="grid grid-cols-3 bg-[#FAF9F5] p-2 font-bold text-[11px] border-b border-[#E2DFD2]">
-                      <span>Metric</span>
-                      <span className="text-[#285943]">Connectivity</span>
-                      <span className="text-[#C28B39]">Heat-Priority</span>
-                    </div>
-                    <div className="divide-y divide-[#E8E5DA] text-[11px]">
-                      <div className="grid grid-cols-3 p-2">
-                        <span className="text-[#607065]">IIC Score</span>
-                        <span className="font-bold text-[#285943]">
-                          {scenarioComparison.connectivity_plan.objective.optimized_value.toFixed(2)}
-                        </span>
-                        <span className="text-[#4A5850]">
-                          {scenarioComparison.heat_priority_plan.secondary_metrics.connectivity_index_iic.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 p-2">
-                        <span className="text-[#607065]">Heat Proxy Area</span>
-                        <span className="text-[#4A5850]">
-                          {(scenarioComparison.connectivity_plan.secondary_metrics.heat_priority_coverage_ha ?? scenarioComparison.connectivity_plan.secondary_metrics.heat_mitigation_coverage_ha ?? 0).toFixed(1)} ha
-                        </span>
-                        <span className="font-bold text-[#C28B39]">
-                          {scenarioComparison.heat_priority_plan.objective.optimized_value.toFixed(1)} ha
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 p-2">
-                        <span className="text-[#607065]">Total Spent</span>
-                        <span className="font-mono">
-                          ₹{(scenarioComparison.connectivity_plan.metadata.total_spent_inr / 10000000).toFixed(2)} Cr
-                        </span>
-                        <span className="font-mono">
-                          ₹{(scenarioComparison.heat_priority_plan.metadata.total_spent_inr / 10000000).toFixed(2)} Cr
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 p-2">
-                        <span className="text-[#607065]">Selected Routes</span>
-                        <span className="font-bold">
-                          {scenarioComparison.connectivity_plan.selected_candidates.length}
-                        </span>
-                        <span className="font-bold">
-                          {scenarioComparison.heat_priority_plan.selected_candidates.length}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Apply Strategy Buttons */}
-                  <div className="grid grid-cols-2 gap-2 pt-2">
+                  {/* Apply Strategic Scenario Actions */}
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#E2DFD2]">
                     <button
-                      onClick={() => {
-                        onApplyPlan('connectivity_first')
-                        onStageChange('review')
-                      }}
-                      className="px-3 py-2 rounded-md bg-[#285943] hover:bg-[#1E4332] text-white text-xs font-semibold cursor-pointer transition-all text-center"
+                      onClick={() => onApplyPlan('connectivity_first')}
+                      className="px-2 py-2 rounded bg-white hover:bg-[#FAF9F5] border border-[#285943] text-[#285943] text-xs font-semibold cursor-pointer shadow-2xs"
                     >
                       Apply Connectivity Plan
                     </button>
                     <button
-                      onClick={() => {
-                        onApplyPlan('heat_priority_first')
-                        onStageChange('review')
-                      }}
-                      className="px-3 py-2 rounded-md bg-[#C28B39] hover:bg-[#A9752D] text-white text-xs font-semibold cursor-pointer transition-all text-center"
+                      onClick={() => onApplyPlan('heat_priority_first')}
+                      className="px-2 py-2 rounded bg-white hover:bg-[#FAF6ED] border border-[#C28B39] text-[#C28B39] text-xs font-semibold cursor-pointer shadow-2xs"
                     >
                       Apply Heat Plan
                     </button>
                   </div>
+                </>
+              ) : (
+                <div className="text-center py-6">
+                  <button
+                    onClick={onCompare}
+                    disabled={isComparing}
+                    className="px-4 py-2.5 rounded-lg bg-[#285943] text-white text-xs font-bold hover:bg-[#1E4332] cursor-pointer shadow-xs"
+                  >
+                    {isComparing ? 'Running Scenario Models...' : 'Calculate Scenario Comparison'}
+                  </button>
                 </div>
               )}
             </div>
           )}
-
-          {/* ============================================================== */}
-          {/* SIDEBAR FOOTER: Attribution & Invariant Status                 */}
-          {/* ============================================================== */}
-          <div className="p-3 text-[10px] text-[#7A8A7F] bg-[#FAF9F5] border-t border-[#E2DFD2] shrink-0">
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1 font-semibold text-[#4A5850]">
-                <Database className="w-3 h-3 text-[#285943]" />
-                <span>Geospatial Invariants Verified</span>
-              </span>
-              <span>EPSG:32643</span>
-            </div>
-            <div className="mt-0.5">
-              Budget invariant enforced • © OpenStreetMap contributors
-            </div>
-          </div>
         </div>
       )}
     </div>

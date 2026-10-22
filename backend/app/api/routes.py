@@ -13,11 +13,14 @@ from app.geospatial.loaders import (
     get_heat_grid_cells
 )
 from app.optimization.optimizer import run_corridor_optimization
+from app.geospatial.routing import generate_user_directed_corridors
 from app.schemas.plan import (
     OptimizationRequest,
     OptimizationResponse,
     ScenarioComparisonRequest,
-    ScenarioComparisonResponse
+    ScenarioComparisonResponse,
+    UserDirectedPlanningRequest,
+    UserDirectedPlanningResponse
 )
 
 router = APIRouter()
@@ -221,4 +224,74 @@ async def compare_scenarios(req: ScenarioComparisonRequest) -> ScenarioCompariso
         divergent_heat_ids=div_heat,
         summary_narrative=narrative
     )
+
+
+@router.post(
+    "/plan/user-corridors",
+    response_model=UserDirectedPlanningResponse,
+    summary="Generate User-Directed Candidate Corridors & Optimization",
+    description="Generates street-aligned candidate green corridors connecting user-selected green spaces/endpoints, with optional budget-constrained optimization."
+)
+async def generate_user_corridors_plan(req: UserDirectedPlanningRequest) -> UserDirectedPlanningResponse:
+    total_endpoints = len(req.selected_patch_ids) + len(req.custom_points or [])
+    if total_endpoints < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least 2 green spaces or planning points must be selected to generate connecting corridor recommendations."
+        )
+
+    try:
+        custom_pts = [p.model_dump() for p in req.custom_points] if req.custom_points else None
+        candidates, endpoints = generate_user_directed_corridors(
+            selected_patch_ids=req.selected_patch_ids,
+            custom_points=custom_pts
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating corridor routes: {str(e)}"
+        )
+
+    total_len_km = sum(c["properties"]["length_km"] for c in candidates)
+    total_cost = sum(c["properties"]["estimated_cost_inr"] for c in candidates)
+
+    geojson = {
+        "type": "FeatureCollection",
+        "metadata": {
+            "title": "User-Directed Candidate Corridors",
+            "count": len(candidates),
+            "selected_patch_count": len(req.selected_patch_ids),
+            "generation_method": "NetworkX Dijkstra shortest-path along OSM street network"
+        },
+        "features": candidates
+    }
+
+    opt_plan = None
+    if req.budget_inr is not None and req.budget_inr > 0 and candidates:
+        try:
+            patches = get_green_patches()
+            grid = get_heat_grid_cells()
+            profile = req.profile or "connectivity_first"
+            opt_result = run_corridor_optimization(
+                candidates=candidates,
+                patches=patches,
+                grid=grid,
+                budget_inr=req.budget_inr,
+                profile=profile
+            )
+            opt_plan = OptimizationResponse(**opt_result)
+        except Exception as opt_err:
+            print(f"Warning: optimization on user candidates failed: {opt_err}")
+
+    return UserDirectedPlanningResponse(
+        selected_patch_ids=req.selected_patch_ids,
+        selected_endpoints=endpoints,
+        candidate_corridors_geojson=geojson,
+        candidate_corridors=candidates,
+        total_candidate_routes=len(candidates),
+        total_candidate_length_km=round(total_len_km, 2),
+        total_candidate_cost_inr=round(total_cost, 2),
+        optimization_plan=opt_plan
+    )
+
 

@@ -6,7 +6,9 @@ import type {
   CandidateSummary,
   OptimizationResponse,
   ScenarioComparisonResponse,
-  HeatGridCollection
+  HeatGridCollection,
+  CustomPlanningPoint,
+  UserDirectedPlanningResponse
 } from '../types'
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
@@ -168,6 +170,33 @@ export async function compareScenarios(budgetInr: number): Promise<ScenarioCompa
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}))
     throw new Error(errorData.detail || `Scenario comparison failed with status ${res.status}`)
+  }
+
+  return await res.json()
+}
+
+export async function generateUserCorridors(
+  selectedPatchIds: string[],
+  customPoints?: CustomPlanningPoint[],
+  budgetInr?: number,
+  profile?: 'connectivity_first' | 'heat_priority_first'
+): Promise<UserDirectedPlanningResponse> {
+  const res = await fetch(`${API_BASE_URL}/plan/user-corridors`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      selected_patch_ids: selectedPatchIds,
+      custom_points: customPoints && customPoints.length > 0 ? customPoints : undefined,
+      budget_inr: budgetInr,
+      profile: profile || 'connectivity_first'
+    })
+  })
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}))
+    throw new Error(errorData.detail || `Corridor generation failed with status ${res.status}`)
   }
 
   return await res.json()

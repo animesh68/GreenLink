@@ -47,3 +47,7 @@ desktop.ini
 # Large Raw XML Harvest Dumps (can be re-harvested via scripts/extract_osm_streets.py)
 data/raw/*.xml
 !data/raw/.gitkeep
+
+# Local Reference Artifacts
+note_reference*.png
+scroll_animation_reference/

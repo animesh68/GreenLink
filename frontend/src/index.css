@@ -7,6 +7,13 @@
    ========================================================================= */
 
 :root {
+  /* Editorial Landing Page Palette */
+  --hero-green: #7BEC78;
+  --forest-ink: #173D2B;
+  --warm-ivory: #F6F2E8;
+  --marigold: #E6A446;
+  --dusty-rose: #D8A3A1;
+
   /* Core GIS Workstation Palette */
   --canvas-warm: #F7F6F0;
   --panel-white: #FFFFFF;
@@ -36,15 +43,36 @@
   --emerald-casing: #0F3D1F;
 }
 
-html, body, #root {
-  height: 100%;
-  width: 100%;
+html {
+  scroll-behavior: smooth;
+}
+
+body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background-color: var(--canvas-warm);
-  color: var(--text-main);
-  overflow: hidden;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--warm-ivory);
+  color: var(--forest-ink);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Editorial Typography */
+.font-display {
+  font-family: 'Instrument Serif', Georgia, serif;
+}
+
+.font-hindi {
+  font-family: 'Rozha One', 'Noto Serif Devanagari', serif;
+}
+
+.font-editorial-sans {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Custom Scrollbar in Warm GIS Palette */
