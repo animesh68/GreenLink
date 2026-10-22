@@ -20,6 +20,7 @@ interface WorkstationHeaderProps {
   hasPlan: boolean
   isStale: boolean
   onOpenGuide: () => void
+  onBackToLanding?: () => void
 }
 
 export const WorkstationHeader: React.FC<WorkstationHeaderProps> = ({
@@ -31,7 +32,8 @@ export const WorkstationHeader: React.FC<WorkstationHeaderProps> = ({
   hasCandidateRoutes = false,
   hasPlan,
   isStale,
-  onOpenGuide
+  onOpenGuide,
+  onBackToLanding
 }) => {
   const stages: {
     id: WorkflowStage
@@ -78,22 +80,52 @@ export const WorkstationHeader: React.FC<WorkstationHeaderProps> = ({
     <header className="h-16 bg-white border-b border-[#E2DFD2] px-4 sm:px-6 flex items-center justify-between z-20 shrink-0 shadow-sm">
       {/* Brand & Study Context */}
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-[#285943] text-white flex items-center justify-center shadow-sm">
-          <Trees className="w-5 h-5 text-[#86A68A]" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-base font-bold text-[#1D2A22] tracking-tight m-0">
-              GreenLink Delhi
-            </h1>
-            <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-[#F7F6F0] text-[#285943] border border-[#D5D1C3]">
-              GIS Workstation
-            </span>
-          </div>
-          <p className="text-[11px] text-[#607065] m-0 hidden sm:block">
-            South-Central Delhi • Urban Green Infrastructure Decision Support
-          </p>
-        </div>
+        {onBackToLanding ? (
+          <button
+            onClick={onBackToLanding}
+            title="Return to GreenLink Delhi Landing Page"
+            className="flex items-center gap-3 text-left cursor-pointer group"
+          >
+            <div className="w-9 h-9 rounded-lg bg-[#285943] group-hover:bg-[#1D4332] text-white flex items-center justify-center shadow-sm transition-colors">
+              <Trees className="w-5 h-5 text-[#86A68A]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-bold text-[#1D2A22] group-hover:text-[#285943] tracking-tight m-0 transition-colors">
+                  GreenLink Delhi
+                </h1>
+                <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-[#F7F6F0] text-[#285943] border border-[#D5D1C3]">
+                  GIS Workstation
+                </span>
+                <span className="text-[10px] font-medium text-[#7E8E84] group-hover:text-[#285943] underline hidden lg:inline ml-1">
+                  ← Landing Page
+                </span>
+              </div>
+              <p className="text-[11px] text-[#607065] m-0 hidden sm:block">
+                South-Central Delhi • Urban Green Infrastructure Decision Support
+              </p>
+            </div>
+          </button>
+        ) : (
+          <>
+            <div className="w-9 h-9 rounded-lg bg-[#285943] text-white flex items-center justify-center shadow-sm">
+              <Trees className="w-5 h-5 text-[#86A68A]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-bold text-[#1D2A22] tracking-tight m-0">
+                  GreenLink Delhi
+                </h1>
+                <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-[#F7F6F0] text-[#285943] border border-[#D5D1C3]">
+                  GIS Workstation
+                </span>
+              </div>
+              <p className="text-[11px] text-[#607065] m-0 hidden sm:block">
+                South-Central Delhi • Urban Green Infrastructure Decision Support
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       {/* 4 Workflow Stage Tabs */}

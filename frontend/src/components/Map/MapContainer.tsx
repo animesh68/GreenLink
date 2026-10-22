@@ -20,8 +20,10 @@ import {
   Globe,
   AlertTriangle,
   X,
-  Trees
+  Trees,
+  Camera
 } from 'lucide-react'
+import { StreetViewModeViewer } from './StreetViewModeViewer'
 
 // Set MapLibre worker bundle URL to prevent runtime worker 404 errors with Vite
 maplibregl.setWorkerUrl(maplibreWorkerUrl)
@@ -223,6 +225,19 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   }
 
   const [activeBasemap, setActiveBasemap] = useState<BasemapId>('streets')
+  const [isStreetViewActive, setIsStreetViewActive] = useState<boolean>(false)
+  const [streetViewTarget, setStreetViewTarget] = useState<{
+    lat: number
+    lng: number
+    zoom: number
+    sourceDesc: string
+  }>({
+    lat: 28.585,
+    lng: 77.215,
+    zoom: 12,
+    sourceDesc: 'Delhi Study Area Center'
+  })
+
   const [keyNotice, setKeyNotice] = useState<{
     type: 'warning' | 'error' | 'info'
     message: string
@@ -994,11 +1009,22 @@ export const MapContainer: React.FC<MapContainerProps> = ({
 
     map.on('load', () => {
       addApplicationLayers(map)
+      map.resize()
     })
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapRef.current) {
+        mapRef.current.resize()
+      }
+    })
+    if (mapContainerRef.current) {
+      resizeObserver.observe(mapContainerRef.current)
+    }
 
     mapRef.current = map
 
     return () => {
+      resizeObserver.disconnect()
       map.remove()
       mapRef.current = null
       handlersAttachedRef.current = false
@@ -1007,6 +1033,14 @@ export const MapContainer: React.FC<MapContainerProps> = ({
 
   // Handle Basemap Switch cleanly via map.setStyle and style.load
   const handleBasemapChange = (newPresetKey: BasemapId) => {
+    // Exit Street View mode if active
+    if (isStreetViewActive) {
+      setIsStreetViewActive(false)
+      requestAnimationFrame(() => {
+        mapRef.current?.resize()
+      })
+    }
+
     const map = mapRef.current
     if (!map || newPresetKey === activeBasemap) return
 
@@ -1021,6 +1055,61 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       addApplicationLayers(map)
       syncAllSourceData(map)
       syncVisibilityAndFilters(map)
+    })
+  }
+
+  // Handle Activating Street View Demo Mode (Captures current coordinates & preserves map)
+  const handleActivateStreetView = () => {
+    const map = mapRef.current
+    let lat = 28.585
+    let lng = 77.215
+    let zoom = 12
+    let sourceDesc = 'Current Map Center'
+
+    if (map) {
+      const center = map.getCenter()
+      lat = center.lat
+      lng = center.lng
+      zoom = map.getZoom()
+    }
+
+    // Prioritize selected corridor or selected green-space feature if active
+    if (selectedCandidate && selectedCandidate.geometry?.coordinates) {
+      const coords = selectedCandidate.geometry.coordinates
+      const mid = coords[Math.floor(coords.length / 2)]
+      if (mid && mid.length >= 2) {
+        lng = mid[0]
+        lat = mid[1]
+        sourceDesc = selectedCandidate.properties?.name || 'Selected Corridor'
+      }
+    } else if (selectedFeature && selectedFeature.geometry) {
+      const geom = selectedFeature.geometry
+      if (geom.type === 'Polygon' && geom.coordinates?.[0]?.length) {
+        const ring = geom.coordinates[0]
+        const mid = ring[Math.floor(ring.length / 2)]
+        lng = mid[0]
+        lat = mid[1]
+        sourceDesc = selectedFeature.properties?.name || 'Selected Green Space'
+      }
+    }
+
+    setStreetViewTarget({
+      lat: Number(lat.toFixed(6)),
+      lng: Number(lng.toFixed(6)),
+      zoom: Number(zoom.toFixed(1)),
+      sourceDesc
+    })
+    setIsStreetViewActive(true)
+  }
+
+  // Handle Returning to Map View
+  const handleReturnToMap = () => {
+    setIsStreetViewActive(false)
+    // Ensure MapLibre recalculates viewport dimensions immediately
+    requestAnimationFrame(() => {
+      if (mapRef.current) {
+        mapRef.current.resize()
+      }
     })
   }
 
@@ -1288,8 +1377,21 @@ export const MapContainer: React.FC<MapContainerProps> = ({
 
   return (
     <div className="relative w-full h-full bg-[#F7F6F0] overflow-hidden">
-      {/* Map Canvas */}
+      {/* Map Canvas (Kept mounted in DOM so WebGL context and layers are never lost) */}
       <div ref={mapContainerRef} className="w-full h-full" />
+
+      {/* Embedded Street View Mode Viewer (Ground-Level Imagery Inspection) */}
+      {isStreetViewActive && (
+        <StreetViewModeViewer
+          lat={streetViewTarget.lat}
+          lng={streetViewTarget.lng}
+          zoom={streetViewTarget.zoom}
+          sourceDesc={streetViewTarget.sourceDesc}
+          selectedFeatureName={selectedFeature?.properties?.name || selectedCandidate?.properties?.name || null}
+          selectedType={selectedCandidate ? 'Corridor' : selectedFeature ? 'Green Space' : 'Map Center'}
+          onReturnToMap={handleReturnToMap}
+        />
+      )}
 
       {/* Visible API Key Notice / Error Banner */}
       {keyNotice && (
@@ -1378,7 +1480,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           <button
             onClick={() => handleBasemapChange('dataviz')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
-              activeBasemap === 'dataviz'
+              activeBasemap === 'dataviz' && !isStreetViewActive
                 ? 'bg-[#285943] text-white shadow-xs'
                 : 'text-[#607065] hover:text-[#1D2A22]'
             }`}
@@ -1386,6 +1488,23 @@ export const MapContainer: React.FC<MapContainerProps> = ({
             id="basemap-dataviz-btn"
           >
             <span>Muted GIS</span>
+          </button>
+
+          <span className="w-px h-3.5 bg-[#D5D1C3] mx-0.5" />
+
+          {/* Street View Mode Button */}
+          <button
+            onClick={handleActivateStreetView}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+              isStreetViewActive
+                ? 'bg-[#285943] text-white shadow-xs'
+                : 'text-[#607065] hover:text-[#1D2A22]'
+            }`}
+            title="Street View demo mode (embedded ground-level imagery)"
+            id="basemap-streetview-btn"
+          >
+            <Camera className="w-3 h-3" />
+            <span>Street View</span>
           </button>
         </div>
 
