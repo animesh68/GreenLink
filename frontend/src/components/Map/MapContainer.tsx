@@ -17,101 +17,145 @@ import {
   EyeOff,
   Flame,
   Map as MapIcon,
-  Globe
+  Globe,
+  AlertTriangle,
+  X
 } from 'lucide-react'
 
 // Set MapLibre worker bundle URL to prevent runtime worker 404 errors with Vite
 maplibregl.setWorkerUrl(maplibreWorkerUrl)
 
 // Basemap Provider Configurations
-const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_API_KEY
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_API_KEY?.trim() || ''
 
-const BASEMAP_PRESETS = {
-  positron: {
-    id: 'positron',
-    name: 'Carto Positron (Clean GIS)',
-    style: {
-      version: 8,
-      sources: {
-        'carto-positron': {
-          type: 'raster',
-          tiles: [
-            'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-            'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-            'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-          ],
-          tileSize: 256,
-          attribution: '© OpenStreetMap contributors, © CARTO'
-        }
-      },
-      layers: [
-        {
-          id: 'carto-positron-layer',
-          type: 'raster',
-          source: 'carto-positron',
-          minzoom: 0,
-          maxzoom: 19
-        }
-      ]
-    },
-    type: 'raster'
+export type BasemapId = 'streets' | 'satellite' | 'hybrid' | 'dataviz'
+
+// Fallback raster styles with open fonts glyphs configured for vector symbol layers
+const GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf'
+
+const CARTO_POSITRON_STYLE = {
+  version: 8,
+  glyphs: GLYPHS_URL,
+  sources: {
+    'carto-positron': {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+        'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+        'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+      ],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors, © CARTO'
+    }
   },
-  bright: {
-    id: 'bright',
-    name: 'Detailed Street (OSM)',
+  layers: [
+    {
+      id: 'carto-positron-layer',
+      type: 'raster',
+      source: 'carto-positron',
+      minzoom: 0,
+      maxzoom: 19
+    }
+  ]
+}
+
+const OSM_RASTER_STYLE = {
+  version: 8,
+  glyphs: GLYPHS_URL,
+  sources: {
+    'osm-raster': {
+      type: 'raster',
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors'
+    }
+  },
+  layers: [
+    {
+      id: 'osm-raster-layer',
+      type: 'raster',
+      source: 'osm-raster',
+      minzoom: 0,
+      maxzoom: 19
+    }
+  ]
+}
+
+const ESRI_IMAGERY_STYLE = {
+  version: 8,
+  glyphs: GLYPHS_URL,
+  sources: {
+    'esri-imagery': {
+      type: 'raster',
+      tiles: [
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+      ],
+      tileSize: 256,
+      attribution:
+        'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, GIS Community'
+    }
+  },
+  layers: [
+    {
+      id: 'esri-imagery-layer',
+      type: 'raster',
+      source: 'esri-imagery',
+      minzoom: 0,
+      maxzoom: 19
+    }
+  ]
+}
+
+export const BASEMAP_PRESETS: Record<
+  BasemapId,
+  {
+    id: BasemapId
+    name: string
+    style: any
+    fallbackStyle: any
+    type: 'vector' | 'raster'
+    description: string
+  }
+> = {
+  streets: {
+    id: 'streets',
+    name: 'Street',
     style: MAPTILER_KEY
-      ? `https://api.maptiler.com/maps/streets-v4/style.json?key=${MAPTILER_KEY}`
-      : {
-          version: 8,
-          sources: {
-            'osm-raster': {
-              type: 'raster',
-              tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-              tileSize: 256,
-              attribution: '© OpenStreetMap contributors'
-            }
-          },
-          layers: [
-            {
-              id: 'osm-raster-layer',
-              type: 'raster',
-              source: 'osm-raster',
-              minzoom: 0,
-              maxzoom: 19
-            }
-          ]
-        },
-    type: MAPTILER_KEY ? 'vector' : 'raster'
+      ? `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`
+      : OSM_RASTER_STYLE,
+    fallbackStyle: OSM_RASTER_STYLE,
+    type: MAPTILER_KEY ? 'vector' : 'raster',
+    description: 'Clean light street cartography with muted road hierarchy'
   },
   satellite: {
     id: 'satellite',
-    name: 'Satellite Aerial',
+    name: 'Satellite',
+    style: MAPTILER_KEY
+      ? `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_KEY}`
+      : ESRI_IMAGERY_STYLE,
+    fallbackStyle: ESRI_IMAGERY_STYLE,
+    type: 'raster',
+    description: 'High-resolution aerial satellite imagery'
+  },
+  hybrid: {
+    id: 'hybrid',
+    name: 'Hybrid',
     style: MAPTILER_KEY
       ? `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`
-      : {
-          version: 8,
-          sources: {
-            'esri-imagery': {
-              type: 'raster',
-              tiles: [
-                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-              ],
-              tileSize: 256,
-              attribution:
-                'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, GIS Community'
-            }
-          },
-          layers: [
-            {
-              id: 'esri-imagery-layer',
-              type: 'raster',
-              source: 'esri-imagery',
-              minzoom: 0,
-              maxzoom: 19
-            }
-          ]
-        },
-    type: 'raster'
+      : ESRI_IMAGERY_STYLE,
+    fallbackStyle: ESRI_IMAGERY_STYLE,
+    type: MAPTILER_KEY ? 'vector' : 'raster',
+    description: 'Satellite imagery with street network and label overlays'
+  },
+  dataviz: {
+    id: 'dataviz',
+    name: 'Muted GIS',
+    style: MAPTILER_KEY
+      ? `https://api.maptiler.com/maps/dataviz-light/style.json?key=${MAPTILER_KEY}`
+      : CARTO_POSITRON_STYLE,
+    fallbackStyle: CARTO_POSITRON_STYLE,
+    type: MAPTILER_KEY ? 'vector' : 'raster',
+    description: 'Muted minimal cartography optimized for data visualization'
   }
 }
 
@@ -158,8 +202,21 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const popupRef = useRef<maplibregl.Popup | null>(null)
+  const handlersAttachedRef = useRef<boolean>(false)
 
-  const [activeBasemap, setActiveBasemap] = useState<'bright' | 'satellite' | 'positron'>('positron')
+  const [activeBasemap, setActiveBasemap] = useState<BasemapId>('streets')
+  const [keyNotice, setKeyNotice] = useState<{
+    type: 'warning' | 'error' | 'info'
+    message: string
+  } | null>(
+    !MAPTILER_KEY
+      ? {
+          type: 'warning',
+          message:
+            'MapTiler Cloud API key not configured in VITE_MAPTILER_API_KEY. Displaying OpenStreetMap / Esri fallback basemap.'
+        }
+      : null
+  )
 
   // Mutable refs to prevent stale closures in MapLibre event handlers
   const greenSpacesRef = useRef(greenSpaces)
@@ -287,9 +344,16 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         source: 'study-boundary',
         paint: {
           'line-color': '#285943',
-          'line-width': 2.0,
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 1.0,
+            13, 1.5,
+            16, 2.0
+          ],
           'line-dasharray': [4, 3],
-          'line-opacity': 0.7
+          'line-opacity': 0.55
         }
       })
     }
@@ -317,8 +381,15 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         },
         paint: {
           'line-color': '#1D2A22',
-          'line-width': 4.5,
-          'line-opacity': 0.65
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 2.5,
+            13, 3.8,
+            16, 5.0
+          ],
+          'line-opacity': 0.45
         }
       })
     }
@@ -336,9 +407,16 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         },
         paint: {
           'line-color': '#C28B39',
-          'line-width': 2.5,
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 1.2,
+            13, 2.0,
+            16, 3.2
+          ],
           'line-dasharray': [3, 2],
-          'line-opacity': 0.95
+          'line-opacity': 0.85
         }
       })
     }
@@ -364,8 +442,15 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-color': '#0F3D1F',
-          'line-width': 7.0,
+          'line-color': '#064E3B',
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 4.8,
+            13, 7.5,
+            16, 10.5
+          ],
           'line-opacity': 0.95
         }
       })
@@ -382,8 +467,15 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-color': '#15803D',
-          'line-width': 4.5,
+          'line-color': '#059669',
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 2.8,
+            13, 4.5,
+            16, 6.5
+          ],
           'line-opacity': 1.0
         }
       })
@@ -401,7 +493,14 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         },
         paint: {
           'line-color': '#2563EB',
-          'line-width': 6.0,
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 4.0,
+            13, 6.0,
+            16, 8.5
+          ],
           'line-opacity': 0.95
         },
         filter: ['==', 'candidate_id', '']
@@ -418,7 +517,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       })
     }
 
-    // Warm forest green polygon fill
+    // Restrained forest green polygon fill
     if (!map.getLayer('green-spaces-fill')) {
       map.addLayer({
         id: 'green-spaces-fill',
@@ -426,7 +525,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         source: 'green-spaces',
         paint: {
           'fill-color': '#285943',
-          'fill-opacity': 0.5
+          'fill-opacity': 0.28
         }
       })
     }
@@ -438,8 +537,46 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         source: 'green-spaces',
         paint: {
           'line-color': '#1E4332',
-          'line-width': 1.5,
-          'line-opacity': 0.9
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 1.0,
+            13, 1.5,
+            16, 2.0
+          ],
+          'line-opacity': 0.75
+        }
+      })
+    }
+
+    // Green space labels visible at neighborhood & street zoom levels (minzoom 11.5)
+    if (!map.getLayer('green-spaces-labels')) {
+      map.addLayer({
+        id: 'green-spaces-labels',
+        type: 'symbol',
+        source: 'green-spaces',
+        minzoom: 11.5,
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-size': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            11.5, 9.5,
+            13.5, 11.5,
+            16, 13.5
+          ],
+          'text-anchor': 'center',
+          'text-optional': true,
+          'text-max-width': 8,
+          'symbol-placement': 'point'
+        },
+        paint: {
+          'text-color': '#16432A',
+          'text-halo-color': '#FFFFFF',
+          'text-halo-width': 1.8,
+          'text-halo-blur': 0.5
         }
       })
     }
@@ -451,7 +588,14 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         source: 'green-spaces',
         paint: {
           'line-color': '#2563EB',
-          'line-width': 3.5
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 2.5,
+            13, 4.0,
+            16, 5.5
+          ]
         },
         filter: ['==', 'id', '']
       })
@@ -465,7 +609,14 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         source: 'green-spaces',
         paint: {
           'line-color': '#F59E0B',
-          'line-width': 4.5,
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 2.8,
+            13, 4.2,
+            16, 5.8
+          ],
           'line-opacity': 0.95
         },
         filter: ['in', 'id', '']
@@ -618,6 +769,9 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   }
 
   const attachMapEventHandlers = (map: maplibregl.Map) => {
+    if (handlersAttachedRef.current) return
+    handlersAttachedRef.current = true
+
     // Heat Grid events
     map.on('mouseenter', 'heat-grid-fill', () => {
       if (showHeatGridRef.current) map.getCanvas().style.cursor = 'pointer'
@@ -731,11 +885,42 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     })
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right')
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
+    // Attribution visible (compact: false) to meet MapTiler terms of use and cartographic attribution standards
+    map.addControl(new maplibregl.AttributionControl({ compact: false }), 'bottom-right')
 
     map.on('error', (e) => {
-      if (e.error?.message?.includes('abort')) return
-      console.warn('MapLibre resource event:', e.error?.message || e)
+      const msg = e.error?.message || ''
+      const status = (e.error as any)?.status
+      if (msg.includes('abort') || msg.includes('canceled')) return
+
+      if (
+        status === 401 ||
+        status === 403 ||
+        msg.includes('403') ||
+        msg.includes('401') ||
+        msg.includes('Forbidden') ||
+        msg.includes('Unauthorized') ||
+        msg.includes('API KEY REQUIRED')
+      ) {
+        console.error('MapTiler key authorization error detected:', e.error)
+        setKeyNotice({
+          type: 'error',
+          message:
+            'MapTiler Cloud returned HTTP 403/401 (Invalid API key or quota limit). Gracefully falling back to OpenStreetMap / Carto basemap.'
+        })
+
+        const currentPreset = BASEMAP_PRESETS[activeBasemap]
+        if (typeof currentPreset.style === 'string' && currentPreset.fallbackStyle) {
+          map.setStyle(currentPreset.fallbackStyle as any)
+          map.once('style.load', () => {
+            addApplicationLayers(map)
+            syncAllSourceData(map)
+            syncVisibilityAndFilters(map)
+          })
+        }
+      } else {
+        console.warn('MapLibre resource event:', msg)
+      }
     })
 
     map.on('load', () => {
@@ -747,18 +932,19 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     return () => {
       map.remove()
       mapRef.current = null
+      handlersAttachedRef.current = false
     }
   }, [])
 
   // Handle Basemap Switch cleanly via map.setStyle and style.load
-  const handleBasemapChange = (newPresetKey: 'bright' | 'satellite' | 'positron') => {
+  const handleBasemapChange = (newPresetKey: BasemapId) => {
     const map = mapRef.current
     if (!map || newPresetKey === activeBasemap) return
 
     setActiveBasemap(newPresetKey)
     const newPreset = BASEMAP_PRESETS[newPresetKey]
 
-    // Set new style
+    // Set new style replacing previous style cleanly
     map.setStyle(newPreset.style as any)
 
     // Re-add layers when new style finishes loading
@@ -987,6 +1173,34 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       {/* Map Canvas */}
       <div ref={mapContainerRef} className="w-full h-full" />
 
+      {/* Visible API Key Notice / Error Banner */}
+      {keyNotice && (
+        <div
+          className={`absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-4 py-2 rounded-lg shadow-lg border text-xs max-w-lg transition-all ${
+            keyNotice.type === 'error'
+              ? 'bg-rose-50 border-rose-300 text-rose-800'
+              : 'bg-amber-50 border-amber-300 text-amber-900'
+          }`}
+          role="alert"
+          id="maptiler-key-notice"
+        >
+          <AlertTriangle
+            className={`w-4 h-4 shrink-0 ${
+              keyNotice.type === 'error' ? 'text-rose-600' : 'text-amber-600'
+            }`}
+          />
+          <div className="flex-1 font-medium">{keyNotice.message}</div>
+          <button
+            onClick={() => setKeyNotice(null)}
+            className="p-1 rounded hover:bg-black/5 text-current opacity-70 hover:opacity-100 cursor-pointer"
+            title="Dismiss notice"
+            aria-label="Dismiss notice"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Floating Map Workstation Controls (Top Left) */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
         {/* Reset Extent Button */}
@@ -1003,14 +1217,14 @@ export const MapContainer: React.FC<MapContainerProps> = ({
         {/* Basemap Switcher Selector Pill */}
         <div className="flex items-center bg-white p-0.5 rounded-md border border-[#D5D1C3] shadow-md text-xs">
           <button
-            onClick={() => handleBasemapChange('bright')}
+            onClick={() => handleBasemapChange('streets')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
-              activeBasemap === 'bright'
+              activeBasemap === 'streets'
                 ? 'bg-[#285943] text-white shadow-xs'
                 : 'text-[#607065] hover:text-[#1D2A22]'
             }`}
-            title="Detailed light street map (preferred default)"
-            id="basemap-bright-btn"
+            title="MapTiler Streets v2 (clean light street map)"
+            id="basemap-streets-btn"
           >
             <MapIcon className="w-3 h-3" />
             <span>Street</span>
@@ -1023,7 +1237,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
                 ? 'bg-[#285943] text-white shadow-xs'
                 : 'text-[#607065] hover:text-[#1D2A22]'
             }`}
-            title="High-resolution aerial satellite imagery"
+            title="MapTiler Satellite (high-resolution aerial imagery)"
             id="basemap-satellite-btn"
           >
             <Globe className="w-3 h-3" />
@@ -1031,16 +1245,29 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           </button>
 
           <button
-            onClick={() => handleBasemapChange('positron')}
+            onClick={() => handleBasemapChange('hybrid')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
-              activeBasemap === 'positron'
+              activeBasemap === 'hybrid'
                 ? 'bg-[#285943] text-white shadow-xs'
                 : 'text-[#607065] hover:text-[#1D2A22]'
             }`}
-            title="Positron muted analytical vector map"
-            id="basemap-positron-btn"
+            title="MapTiler Hybrid (aerial imagery with street labels)"
+            id="basemap-hybrid-btn"
           >
-            <span>Positron</span>
+            <span>Hybrid</span>
+          </button>
+
+          <button
+            onClick={() => handleBasemapChange('dataviz')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+              activeBasemap === 'dataviz'
+                ? 'bg-[#285943] text-white shadow-xs'
+                : 'text-[#607065] hover:text-[#1D2A22]'
+            }`}
+            title="MapTiler Dataviz Light (muted analytical GIS map)"
+            id="basemap-dataviz-btn"
+          >
+            <span>Muted GIS</span>
           </button>
         </div>
 
@@ -1129,14 +1356,10 @@ export const MapContainer: React.FC<MapContainerProps> = ({
           <div className="pt-2 border-t border-[#E8E5DA] text-[10px] text-[#7A8A7F] flex items-center justify-between">
             <span>
               Basemap:{' '}
-              {activeBasemap === 'bright'
-                ? 'OpenFreeMap Bright'
-                : activeBasemap === 'satellite'
-                ? 'Esri World Imagery'
-                : 'OpenFreeMap Positron'}
+              {BASEMAP_PRESETS[activeBasemap]?.name || 'Street'}
             </span>
             <span className="text-[#285943] font-mono text-[9px] uppercase font-bold">
-              {BASEMAP_PRESETS[activeBasemap].type}
+              {BASEMAP_PRESETS[activeBasemap]?.type || 'vector'}
             </span>
           </div>
         </div>
