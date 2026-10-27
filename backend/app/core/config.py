@@ -21,13 +21,20 @@ class Settings:
     BASE_DIR: str = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
     DATA_PROCESSED_DIR: str = os.path.join(BASE_DIR, "data", "processed")
     
-    # CORS origins
-    ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "*"
-    ]
+    # CORS origins (Allow only specific local dev origins; no wildcard with credentials)
+    cors_env = os.environ.get("CORS_ORIGINS", "").strip()
+    ALLOWED_ORIGINS: List[str] = (
+        [origin.strip() for origin in cors_env.split(",") if origin.strip()]
+        if cors_env
+        else [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:5174",
+            "http://127.0.0.1:5174",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ]
+    )
 
 
 settings = Settings()
