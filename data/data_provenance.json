@@ -1,0 +1,102 @@
+{
+  "project": "GreenLink Delhi",
+  "dataset": "South-Central Delhi Green Spaces, Road Network & Candidate Corridors",
+  "version": "2.0.0",
+  "last_updated": "2026-10-19",
+  "geographic_coverage": {
+    "study_area_name": "South-Central Delhi Study Area",
+    "bounding_box_wgs84": {
+      "min_lon": 77.160,
+      "min_lat": 28.530,
+      "max_lon": 77.270,
+      "max_lat": 28.640
+    },
+    "extent_description": "Rectangular research bounding box (~131.8 km²) spanning Central Ridge in the west, Lodhi Garden and Sunder Nursery in the central/east, and Hauz Khas / Sanjay Van fringe in the south.",
+    "is_official_administrative_boundary": false
+  },
+  "coordinate_reference_systems": {
+    "storage_and_geojson": "EPSG:4326 (WGS 84 - degrees)",
+    "projected_metric": "EPSG:32643 (WGS 84 / UTM Zone 43N - meters)"
+  },
+  "data_sources": {
+    "green_spaces": {
+      "provider": "OpenStreetMap",
+      "license": "Open Data Commons Open Database License (ODbL) 1.0",
+      "attribution": "© OpenStreetMap contributors",
+      "queried_tags": ["leisure=park", "leisure=garden", "landuse=forest", "natural=wood"]
+    },
+    "road_network": {
+      "provider": "OpenStreetMap (api.openstreetmap.org)",
+      "retrieval_method": "Adaptive 9-tile harvesting across bounding box",
+      "license": "Open Data Commons Open Database License (ODbL) 1.0",
+      "attribution": "© OpenStreetMap contributors",
+      "allowed_highways": [
+        "primary", "primary_link",
+        "secondary", "secondary_link",
+        "tertiary", "tertiary_link",
+        "residential", "living_street",
+        "unclassified", "pedestrian", "cycleway", "footway"
+      ],
+      "excluded_highways": ["motorway", "motorway_link", "trunk", "trunk_link", "service", "track"]
+    }
+  },
+  "validation_metrics": {
+    "green_anchors": {
+      "total_anchors": 12,
+      "total_green_area_hectares": 1752.72,
+      "all_geometries_valid": true,
+      "snapped_anchors_count": 12,
+      "failed_snapping_count": 0,
+      "max_snapping_distance_m": 235.0,
+      "min_snapping_distance_m": 0.4,
+      "average_snapping_distance_m": 40.5
+    },
+    "road_network_graph": {
+      "raw_nodes_harvested": 427512,
+      "raw_ways_harvested": 17388,
+      "clean_graph_nodes": 77474,
+      "clean_graph_edges": 86661,
+      "metric_crs": "EPSG:32643"
+    },
+    "candidate_corridors": {
+      "total_candidates": 14,
+      "pairs_considered": 66,
+      "pairs_within_separation_limit": 17,
+      "successful_routes": 14,
+      "excluded_disconnected_pairs": 3,
+      "excluded_circuitous_routes": 0,
+      "min_length_m": 1915.2,
+      "median_length_m": 3621.2,
+      "max_length_m": 4444.6,
+      "total_candidate_network_km": 46.95,
+      "total_provisional_cost_inr": 204368000.0,
+      "geometry_types": ["LineString"],
+      "all_geometries_valid": true
+    }
+  },
+  "provisional_cost_model": {
+    "status": "provisional_planning_benchmark",
+    "note": "Hypothetical cost model for planning exploration; does not represent official Delhi government or CPWD tender rates.",
+    "rates_inr_per_meter": {
+      "primary": 6000.0,
+      "primary_link": 5000.0,
+      "secondary": 4500.0,
+      "secondary_link": 4000.0,
+      "tertiary": 3500.0,
+      "tertiary_link": 3000.0,
+      "residential": 2500.0,
+      "living_street": 2500.0,
+      "pedestrian": 2000.0,
+      "cycleway": 2000.0,
+      "unclassified": 2500.0,
+      "default": 3000.0,
+      "base_mobilization_per_corridor": 150000.0
+    }
+  },
+  "methodological_limitations": [
+    "Candidate routes are geometric shortest paths along OpenStreetMap street centerlines; they do not prove legal municipal planting permissions, physical underground utility clearance, or sidewalk right-of-way availability.",
+    "Road classifications are derived from OpenStreetMap tags and have not been independently verified via field survey.",
+    "Connecting two green anchors along a street candidate does not guarantee immediate biological connectivity or wildlife movement.",
+    "The bounding box is an empirical research extent (~131.8 km²) and does not correspond to an official municipal administrative boundary of South-Central Delhi."
+  ]
+}

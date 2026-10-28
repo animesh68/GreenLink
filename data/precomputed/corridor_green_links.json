@@ -1,0 +1,766 @@
+{
+  "metadata": {
+    "title": "GreenLink Delhi Corridor to Green Space Relationships",
+    "corridor_count": 14,
+    "generated_at": "2026-10-28",
+    "relationship_categories": [
+      "endpoint_anchors: Direct route start and destination anchors",
+      "all_intersecting_anchors: Green space polygons physically intersected by the corridor line",
+      "traversed_intermediate_anchors: Intermediate green patches traversed along route",
+      "nearby_adjacent_anchors: Green spaces within 100m of right-of-way corridor"
+    ]
+  },
+  "links": {
+    "cand_001": {
+      "candidate_id": "cand_001",
+      "candidate_name": "Central Ridge Reserve Forest \u2014 Nehru Park (Chanakyapuri) Corridor",
+      "source_anchor": {
+        "id": "patch_001",
+        "name": "Central Ridge Reserve Forest",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_002",
+        "name": "Nehru Park (Chanakyapuri)",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_001",
+          "green_space_name": "Central Ridge Reserve Forest",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 1511.76,
+          "corridor_buffer_overlap_ha": 7.6102,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_002",
+          "green_space_name": "Nehru Park (Chanakyapuri)",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 502.84,
+          "corridor_buffer_overlap_ha": 2.6122,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_001",
+          "green_space_name": "Central Ridge Reserve Forest",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 1511.76,
+          "corridor_buffer_overlap_ha": 7.6102
+        },
+        {
+          "green_space_id": "patch_002",
+          "green_space_name": "Nehru Park (Chanakyapuri)",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 502.84,
+          "corridor_buffer_overlap_ha": 2.6122
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_002": {
+      "candidate_id": "cand_002",
+      "candidate_name": "Nehru Park (Chanakyapuri) \u2014 Lodhi Garden Corridor",
+      "source_anchor": {
+        "id": "patch_002",
+        "name": "Nehru Park (Chanakyapuri)",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_003",
+        "name": "Lodhi Garden",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_002",
+          "green_space_name": "Nehru Park (Chanakyapuri)",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 502.84,
+          "corridor_buffer_overlap_ha": 2.6122,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_003",
+          "green_space_name": "Lodhi Garden",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 842.6,
+          "corridor_buffer_overlap_ha": 4.1643,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_002",
+          "green_space_name": "Nehru Park (Chanakyapuri)",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 502.84,
+          "corridor_buffer_overlap_ha": 2.6122
+        },
+        {
+          "green_space_id": "patch_003",
+          "green_space_name": "Lodhi Garden",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 842.6,
+          "corridor_buffer_overlap_ha": 4.1643
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_003": {
+      "candidate_id": "cand_003",
+      "candidate_name": "Nehru Park (Chanakyapuri) \u2014 Rose Garden & Safdarjung Greens Corridor",
+      "source_anchor": {
+        "id": "patch_002",
+        "name": "Nehru Park (Chanakyapuri)",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_008",
+        "name": "Rose Garden & Safdarjung Greens",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_002",
+          "green_space_name": "Nehru Park (Chanakyapuri)",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 875.8,
+          "corridor_buffer_overlap_ha": 4.4025,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_008",
+          "green_space_name": "Rose Garden & Safdarjung Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 940.5,
+          "corridor_buffer_overlap_ha": 4.71,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_002",
+          "green_space_name": "Nehru Park (Chanakyapuri)",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 875.8,
+          "corridor_buffer_overlap_ha": 4.4025
+        },
+        {
+          "green_space_id": "patch_008",
+          "green_space_name": "Rose Garden & Safdarjung Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 940.5,
+          "corridor_buffer_overlap_ha": 4.71
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_004": {
+      "candidate_id": "cand_004",
+      "candidate_name": "Lodhi Garden \u2014 Sunder Nursery & Humayun Greens Corridor",
+      "source_anchor": {
+        "id": "patch_003",
+        "name": "Lodhi Garden",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_004",
+        "name": "Sunder Nursery & Humayun Greens",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_003",
+          "green_space_name": "Lodhi Garden",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 671.92,
+          "corridor_buffer_overlap_ha": 3.3735,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_004",
+          "green_space_name": "Sunder Nursery & Humayun Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 1003.51,
+          "corridor_buffer_overlap_ha": 4.7601,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_003",
+          "green_space_name": "Lodhi Garden",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 671.92,
+          "corridor_buffer_overlap_ha": 3.3735
+        },
+        {
+          "green_space_id": "patch_004",
+          "green_space_name": "Sunder Nursery & Humayun Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 1003.51,
+          "corridor_buffer_overlap_ha": 4.7601
+        },
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 61.35,
+          "corridor_buffer_overlap_ha": 0.3344
+        }
+      ],
+      "traversed_intermediate_anchors": [
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 61.35,
+          "corridor_buffer_overlap_ha": 0.3344,
+          "relationship_type": "traversed_intermediate_patch",
+          "note": "Corridor centerline physically traverses or skims this green patch along its road route."
+        }
+      ],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_005": {
+      "candidate_id": "cand_005",
+      "candidate_name": "Lodhi Garden \u2014 Delhi Golf Club Ecological Sanctuary Corridor",
+      "source_anchor": {
+        "id": "patch_003",
+        "name": "Lodhi Garden",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_005",
+        "name": "Delhi Golf Club Ecological Sanctuary",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_003",
+          "green_space_name": "Lodhi Garden",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 671.92,
+          "corridor_buffer_overlap_ha": 3.3735,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 895.56,
+          "corridor_buffer_overlap_ha": 4.601,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_003",
+          "green_space_name": "Lodhi Garden",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 671.92,
+          "corridor_buffer_overlap_ha": 3.3735
+        },
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 895.56,
+          "corridor_buffer_overlap_ha": 4.601
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_006": {
+      "candidate_id": "cand_006",
+      "candidate_name": "Lodhi Garden \u2014 National Zoological Park & Purana Qila Greens Corridor",
+      "source_anchor": {
+        "id": "patch_003",
+        "name": "Lodhi Garden",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_006",
+        "name": "National Zoological Park & Purana Qila Greens",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_003",
+          "green_space_name": "Lodhi Garden",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 547.59,
+          "corridor_buffer_overlap_ha": 2.9903,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_006",
+          "green_space_name": "National Zoological Park & Purana Qila Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 808.66,
+          "corridor_buffer_overlap_ha": 4.1398,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_003",
+          "green_space_name": "Lodhi Garden",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 547.59,
+          "corridor_buffer_overlap_ha": 2.9903
+        },
+        {
+          "green_space_id": "patch_006",
+          "green_space_name": "National Zoological Park & Purana Qila Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 808.66,
+          "corridor_buffer_overlap_ha": 4.1398
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_007": {
+      "candidate_id": "cand_007",
+      "candidate_name": "Lodhi Garden \u2014 India Gate Lawns & Central Vista Greens Corridor",
+      "source_anchor": {
+        "id": "patch_003",
+        "name": "Lodhi Garden",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_011",
+        "name": "India Gate Lawns & Central Vista Greens",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_003",
+          "green_space_name": "Lodhi Garden",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 547.59,
+          "corridor_buffer_overlap_ha": 2.7694,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_011",
+          "green_space_name": "India Gate Lawns & Central Vista Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 1432.08,
+          "corridor_buffer_overlap_ha": 7.1804,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_003",
+          "green_space_name": "Lodhi Garden",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 547.59,
+          "corridor_buffer_overlap_ha": 2.7694
+        },
+        {
+          "green_space_id": "patch_011",
+          "green_space_name": "India Gate Lawns & Central Vista Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 1432.08,
+          "corridor_buffer_overlap_ha": 7.1804
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_008": {
+      "candidate_id": "cand_008",
+      "candidate_name": "Sunder Nursery & Humayun Greens \u2014 Delhi Golf Club Ecological Sanctuary Corridor",
+      "source_anchor": {
+        "id": "patch_004",
+        "name": "Sunder Nursery & Humayun Greens",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_005",
+        "name": "Delhi Golf Club Ecological Sanctuary",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_004",
+          "green_space_name": "Sunder Nursery & Humayun Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 1010.67,
+          "corridor_buffer_overlap_ha": 4.9148,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 778.08,
+          "corridor_buffer_overlap_ha": 3.96,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_004",
+          "green_space_name": "Sunder Nursery & Humayun Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 1010.67,
+          "corridor_buffer_overlap_ha": 4.9148
+        },
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 778.08,
+          "corridor_buffer_overlap_ha": 3.96
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_009": {
+      "candidate_id": "cand_009",
+      "candidate_name": "Sunder Nursery & Humayun Greens \u2014 National Zoological Park & Purana Qila Greens Corridor",
+      "source_anchor": {
+        "id": "patch_004",
+        "name": "Sunder Nursery & Humayun Greens",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_006",
+        "name": "National Zoological Park & Purana Qila Greens",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_004",
+          "green_space_name": "Sunder Nursery & Humayun Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 1010.67,
+          "corridor_buffer_overlap_ha": 4.9148,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_006",
+          "green_space_name": "National Zoological Park & Purana Qila Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 906.35,
+          "corridor_buffer_overlap_ha": 4.6291,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_004",
+          "green_space_name": "Sunder Nursery & Humayun Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 1010.67,
+          "corridor_buffer_overlap_ha": 4.9148
+        },
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 818.07,
+          "corridor_buffer_overlap_ha": 3.8717
+        },
+        {
+          "green_space_id": "patch_006",
+          "green_space_name": "National Zoological Park & Purana Qila Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 906.35,
+          "corridor_buffer_overlap_ha": 4.6291
+        }
+      ],
+      "traversed_intermediate_anchors": [
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 818.07,
+          "corridor_buffer_overlap_ha": 3.8717,
+          "relationship_type": "traversed_intermediate_patch",
+          "note": "Corridor centerline physically traverses or skims this green patch along its road route."
+        }
+      ],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_010": {
+      "candidate_id": "cand_010",
+      "candidate_name": "Delhi Golf Club Ecological Sanctuary \u2014 National Zoological Park & Purana Qila Greens Corridor",
+      "source_anchor": {
+        "id": "patch_005",
+        "name": "Delhi Golf Club Ecological Sanctuary",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_006",
+        "name": "National Zoological Park & Purana Qila Greens",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 700.48,
+          "corridor_buffer_overlap_ha": 3.3604,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_006",
+          "green_space_name": "National Zoological Park & Purana Qila Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 906.35,
+          "corridor_buffer_overlap_ha": 4.6291,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 700.48,
+          "corridor_buffer_overlap_ha": 3.3604
+        },
+        {
+          "green_space_id": "patch_006",
+          "green_space_name": "National Zoological Park & Purana Qila Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 906.35,
+          "corridor_buffer_overlap_ha": 4.6291
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_011": {
+      "candidate_id": "cand_011",
+      "candidate_name": "Delhi Golf Club Ecological Sanctuary \u2014 India Gate Lawns & Central Vista Greens Corridor",
+      "source_anchor": {
+        "id": "patch_005",
+        "name": "Delhi Golf Club Ecological Sanctuary",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_011",
+        "name": "India Gate Lawns & Central Vista Greens",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 168.16,
+          "corridor_buffer_overlap_ha": 0.9388,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_011",
+          "green_space_name": "India Gate Lawns & Central Vista Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 735.04,
+          "corridor_buffer_overlap_ha": 3.6972,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_005",
+          "green_space_name": "Delhi Golf Club Ecological Sanctuary",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 168.16,
+          "corridor_buffer_overlap_ha": 0.9388
+        },
+        {
+          "green_space_id": "patch_011",
+          "green_space_name": "India Gate Lawns & Central Vista Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 735.04,
+          "corridor_buffer_overlap_ha": 3.6972
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_012": {
+      "candidate_id": "cand_012",
+      "candidate_name": "National Zoological Park & Purana Qila Greens \u2014 India Gate Lawns & Central Vista Greens Corridor",
+      "source_anchor": {
+        "id": "patch_006",
+        "name": "National Zoological Park & Purana Qila Greens",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_011",
+        "name": "India Gate Lawns & Central Vista Greens",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_006",
+          "green_space_name": "National Zoological Park & Purana Qila Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 808.66,
+          "corridor_buffer_overlap_ha": 4.1398,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_011",
+          "green_space_name": "India Gate Lawns & Central Vista Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 735.04,
+          "corridor_buffer_overlap_ha": 3.6972,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_006",
+          "green_space_name": "National Zoological Park & Purana Qila Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 808.66,
+          "corridor_buffer_overlap_ha": 4.1398
+        },
+        {
+          "green_space_id": "patch_011",
+          "green_space_name": "India Gate Lawns & Central Vista Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 735.04,
+          "corridor_buffer_overlap_ha": 3.6972
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_013": {
+      "candidate_id": "cand_013",
+      "candidate_name": "Rose Garden & Safdarjung Greens \u2014 Siri Fort Sports Complex & City Forest Corridor",
+      "source_anchor": {
+        "id": "patch_008",
+        "name": "Rose Garden & Safdarjung Greens",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_009",
+        "name": "Siri Fort Sports Complex & City Forest",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_008",
+          "green_space_name": "Rose Garden & Safdarjung Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 630.34,
+          "corridor_buffer_overlap_ha": 3.3037,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_009",
+          "green_space_name": "Siri Fort Sports Complex & City Forest",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 646.87,
+          "corridor_buffer_overlap_ha": 3.301,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_007",
+          "green_space_name": "Hauz Khas District Park & Deer Park",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 270.68,
+          "corridor_buffer_overlap_ha": 1.2922
+        },
+        {
+          "green_space_id": "patch_008",
+          "green_space_name": "Rose Garden & Safdarjung Greens",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 630.34,
+          "corridor_buffer_overlap_ha": 3.3037
+        },
+        {
+          "green_space_id": "patch_009",
+          "green_space_name": "Siri Fort Sports Complex & City Forest",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 646.87,
+          "corridor_buffer_overlap_ha": 3.301
+        }
+      ],
+      "traversed_intermediate_anchors": [
+        {
+          "green_space_id": "patch_007",
+          "green_space_name": "Hauz Khas District Park & Deer Park",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 270.68,
+          "corridor_buffer_overlap_ha": 1.2922,
+          "relationship_type": "traversed_intermediate_patch",
+          "note": "Corridor centerline physically traverses or skims this green patch along its road route."
+        }
+      ],
+      "nearby_adjacent_anchors": []
+    },
+    "cand_014": {
+      "candidate_id": "cand_014",
+      "candidate_name": "Siri Fort Sports Complex & City Forest \u2014 Jahanpanah City Forest (Northern Fringe) Corridor",
+      "source_anchor": {
+        "id": "patch_009",
+        "name": "Siri Fort Sports Complex & City Forest",
+        "verified_endpoint": true
+      },
+      "target_anchor": {
+        "id": "patch_012",
+        "name": "Jahanpanah City Forest (Northern Fringe)",
+        "verified_endpoint": true
+      },
+      "endpoint_anchors": [
+        {
+          "green_space_id": "patch_009",
+          "green_space_name": "Siri Fort Sports Complex & City Forest",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 649.76,
+          "corridor_buffer_overlap_ha": 3.2695,
+          "endpoint_role": "source"
+        },
+        {
+          "green_space_id": "patch_012",
+          "green_space_name": "Jahanpanah City Forest (Northern Fringe)",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 620.71,
+          "corridor_buffer_overlap_ha": 3.1933,
+          "endpoint_role": "target"
+        }
+      ],
+      "all_intersecting_anchors": [
+        {
+          "green_space_id": "patch_009",
+          "green_space_name": "Siri Fort Sports Complex & City Forest",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 649.76,
+          "corridor_buffer_overlap_ha": 3.2695
+        },
+        {
+          "green_space_id": "patch_012",
+          "green_space_name": "Jahanpanah City Forest (Northern Fringe)",
+          "distance_to_corridor_m": 0.0,
+          "line_intersection_length_m": 620.71,
+          "corridor_buffer_overlap_ha": 3.1933
+        }
+      ],
+      "traversed_intermediate_anchors": [],
+      "nearby_adjacent_anchors": []
+    }
+  }
+}

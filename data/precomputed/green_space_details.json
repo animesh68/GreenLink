@@ -1,0 +1,1566 @@
+{
+  "metadata": {
+    "title": "GreenLink Delhi Precomputed Green Space Details",
+    "count": 12,
+    "crs_storage": "EPSG:4326",
+    "crs_metric": "EPSG:32643",
+    "generated_at": "2026-10-28",
+    "verification_status": "All 12 geometries validated with pyproj UTM 43N projected metric calculations."
+  },
+  "green_spaces": {
+    "patch_001": {
+      "id": "patch_001",
+      "reference_id": "PATCH_001",
+      "name": "Central Ridge Reserve Forest",
+      "osm_type": "forest",
+      "reference_metadata": {
+        "name": "Central Ridge Reserve Forest",
+        "area_ha": 673.32,
+        "area_acres": 1664,
+        "area_km2": 6.73,
+        "perimeter_km": {
+          "min": 14.5,
+          "max": 16.0
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 580.67,
+        "stored_area_sqm": 5806673.1,
+        "stored_perimeter_meters": 10714.8,
+        "derived_area_hectares": 580.6673,
+        "derived_area_sqm": 5806673.06,
+        "derived_perimeter_meters": 10714.78,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.0005,
+          "perimeter_difference_pct": 0.0002,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 673.32,
+        "gis_derived_area_ha": 580.6673,
+        "area_difference_ha": 92.6527,
+        "area_difference_pct": 13.76,
+        "reference_perimeter_range_m": [
+          14500.0,
+          16000.0
+        ],
+        "gis_derived_perimeter_m": 10714.78,
+        "perimeter_within_reference_range": false,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.181765,
+          28.604267
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.168,
+              28.598
+            ],
+            [
+              77.182,
+              28.618
+            ],
+            [
+              77.192,
+              28.625
+            ],
+            [
+              77.195,
+              28.615
+            ],
+            [
+              77.185,
+              28.592
+            ],
+            [
+              77.172,
+              28.585
+            ],
+            [
+              77.168,
+              28.598
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_001",
+          "candidate_name": "Central Ridge Reserve Forest \u2014 Nehru Park (Chanakyapuri) Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        }
+      ]
+    },
+    "patch_002": {
+      "id": "patch_002",
+      "reference_id": "PATCH_002",
+      "name": "Nehru Park (Chanakyapuri)",
+      "osm_type": "park",
+      "reference_metadata": {
+        "name": "Nehru Park (Chanakyapuri)",
+        "area_ha": 32.37,
+        "area_acres": 80,
+        "area_km2": 0.32,
+        "perimeter_km": {
+          "min": 2.3,
+          "max": 2.6
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 91.1,
+        "stored_area_sqm": 911022.6,
+        "stored_perimeter_meters": 3840.0,
+        "derived_area_hectares": 91.1023,
+        "derived_area_sqm": 911022.55,
+        "derived_perimeter_meters": 3840.0,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.0025,
+          "perimeter_difference_pct": 0.0,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 32.37,
+        "gis_derived_area_ha": 91.1023,
+        "area_difference_ha": 58.7323,
+        "area_difference_pct": 181.44,
+        "reference_perimeter_range_m": [
+          2300.0,
+          2600.0
+        ],
+        "gis_derived_perimeter_m": 3840.0,
+        "perimeter_within_reference_range": false,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.199,
+          28.586
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.193,
+              28.588
+            ],
+            [
+              77.202,
+              28.592
+            ],
+            [
+              77.205,
+              28.584
+            ],
+            [
+              77.196,
+              28.58
+            ],
+            [
+              77.193,
+              28.588
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_001",
+          "candidate_name": "Central Ridge Reserve Forest \u2014 Nehru Park (Chanakyapuri) Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_002",
+          "candidate_name": "Nehru Park (Chanakyapuri) \u2014 Lodhi Garden Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_003",
+          "candidate_name": "Nehru Park (Chanakyapuri) \u2014 Rose Garden & Safdarjung Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        }
+      ]
+    },
+    "patch_003": {
+      "id": "patch_003",
+      "reference_id": "PATCH_003",
+      "name": "Lodhi Garden",
+      "osm_type": "park",
+      "reference_metadata": {
+        "name": "Lodhi Garden",
+        "area_ha": 36.42,
+        "area_acres": 90,
+        "area_km2": 0.36,
+        "perimeter_km": {
+          "min": 2.5,
+          "max": 2.8
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 86.76,
+        "stored_area_sqm": 867602.8,
+        "stored_perimeter_meters": 3730.3,
+        "derived_area_hectares": 86.7603,
+        "derived_area_sqm": 867602.83,
+        "derived_perimeter_meters": 3730.31,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.0003,
+          "perimeter_difference_pct": 0.0003,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 36.42,
+        "gis_derived_area_ha": 86.7603,
+        "area_difference_ha": 50.3403,
+        "area_difference_pct": 138.22,
+        "reference_perimeter_range_m": [
+          2500.0,
+          2800.0
+        ],
+        "gis_derived_perimeter_m": 3730.31,
+        "perimeter_within_reference_range": false,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.22,
+          28.593
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.215,
+              28.589
+            ],
+            [
+              77.225,
+              28.589
+            ],
+            [
+              77.225,
+              28.597
+            ],
+            [
+              77.215,
+              28.597
+            ],
+            [
+              77.215,
+              28.589
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_002",
+          "candidate_name": "Nehru Park (Chanakyapuri) \u2014 Lodhi Garden Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_004",
+          "candidate_name": "Lodhi Garden \u2014 Sunder Nursery & Humayun Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_005",
+          "candidate_name": "Lodhi Garden \u2014 Delhi Golf Club Ecological Sanctuary Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_006",
+          "candidate_name": "Lodhi Garden \u2014 National Zoological Park & Purana Qila Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_007",
+          "candidate_name": "Lodhi Garden \u2014 India Gate Lawns & Central Vista Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        }
+      ]
+    },
+    "patch_004": {
+      "id": "patch_004",
+      "reference_id": "PATCH_007",
+      "name": "Sunder Nursery & Humayun Greens",
+      "osm_type": "heritage_park",
+      "reference_metadata": {
+        "name": "Sunder Nursery & Humayun Greens",
+        "area_ha": 36.42,
+        "area_acres": 90,
+        "area_km2": 0.36,
+        "perimeter_km": {
+          "min": 2.4,
+          "max": 2.7
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 97.61,
+        "stored_area_sqm": 976143.3,
+        "stored_perimeter_meters": 4046.7,
+        "derived_area_hectares": 97.6143,
+        "derived_area_sqm": 976143.32,
+        "derived_perimeter_meters": 4046.7,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.0044,
+          "perimeter_difference_pct": 0.0,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 36.42,
+        "gis_derived_area_ha": 97.6143,
+        "area_difference_ha": 61.1943,
+        "area_difference_pct": 168.02,
+        "reference_perimeter_range_m": [
+          2400.0,
+          2700.0
+        ],
+        "gis_derived_perimeter_m": 4046.7,
+        "perimeter_within_reference_range": false,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.2464,
+          28.586644
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.24,
+              28.588
+            ],
+            [
+              77.251,
+              28.593
+            ],
+            [
+              77.252,
+              28.584
+            ],
+            [
+              77.242,
+              28.581
+            ],
+            [
+              77.24,
+              28.588
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_004",
+          "candidate_name": "Lodhi Garden \u2014 Sunder Nursery & Humayun Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_008",
+          "candidate_name": "Sunder Nursery & Humayun Greens \u2014 Delhi Golf Club Ecological Sanctuary Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_009",
+          "candidate_name": "Sunder Nursery & Humayun Greens \u2014 National Zoological Park & Purana Qila Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        }
+      ]
+    },
+    "patch_005": {
+      "id": "patch_005",
+      "reference_id": "PATCH_004",
+      "name": "Delhi Golf Club Ecological Sanctuary",
+      "osm_type": "golf_green",
+      "reference_metadata": {
+        "name": "Delhi Golf Club Ecological Sanctuary",
+        "area_ha": 89.03,
+        "area_acres": 220,
+        "area_km2": 0.89,
+        "perimeter_km": {
+          "min": 4.2,
+          "max": 4.6
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 92.72,
+        "stored_area_sqm": 927237.6,
+        "stored_perimeter_meters": 3994.1,
+        "derived_area_hectares": 92.7238,
+        "derived_area_sqm": 927237.61,
+        "derived_perimeter_meters": 3994.13,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.0041,
+          "perimeter_difference_pct": 0.0008,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 89.03,
+        "gis_derived_area_ha": 92.7238,
+        "area_difference_ha": 3.6938,
+        "area_difference_pct": 4.15,
+        "reference_perimeter_range_m": [
+          4200.0,
+          4600.0
+        ],
+        "gis_derived_perimeter_m": 3994.13,
+        "perimeter_within_reference_range": false,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.238509,
+          28.597456
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.232,
+              28.598
+            ],
+            [
+              77.243,
+              28.604
+            ],
+            [
+              77.244,
+              28.595
+            ],
+            [
+              77.234,
+              28.592
+            ],
+            [
+              77.232,
+              28.598
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_004",
+          "candidate_name": "Lodhi Garden \u2014 Sunder Nursery & Humayun Greens Corridor",
+          "relationship": "intersecting",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_005",
+          "candidate_name": "Lodhi Garden \u2014 Delhi Golf Club Ecological Sanctuary Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_008",
+          "candidate_name": "Sunder Nursery & Humayun Greens \u2014 Delhi Golf Club Ecological Sanctuary Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_009",
+          "candidate_name": "Sunder Nursery & Humayun Greens \u2014 National Zoological Park & Purana Qila Greens Corridor",
+          "relationship": "intersecting",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_010",
+          "candidate_name": "Delhi Golf Club Ecological Sanctuary \u2014 National Zoological Park & Purana Qila Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_011",
+          "candidate_name": "Delhi Golf Club Ecological Sanctuary \u2014 India Gate Lawns & Central Vista Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        }
+      ]
+    },
+    "patch_006": {
+      "id": "patch_006",
+      "reference_id": "PATCH_006",
+      "name": "National Zoological Park & Purana Qila Greens",
+      "osm_type": "reserve",
+      "reference_metadata": {
+        "name": "National Zoological Park & Purana Qila Greens",
+        "area_ha": 110.0,
+        "area_acres": 272,
+        "area_km2": 1.1,
+        "perimeter_km": {
+          "min": 4.8,
+          "max": 5.2
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 117.66,
+        "stored_area_sqm": 1176604.5,
+        "stored_perimeter_meters": 4417.7,
+        "derived_area_hectares": 117.6605,
+        "derived_area_sqm": 1176604.53,
+        "derived_perimeter_meters": 4417.68,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.0004,
+          "perimeter_difference_pct": 0.0005,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 110.0,
+        "gis_derived_area_ha": 117.6605,
+        "area_difference_ha": 7.6605,
+        "area_difference_pct": 6.96,
+        "reference_perimeter_range_m": [
+          4800.0,
+          5200.0
+        ],
+        "gis_derived_perimeter_m": 4417.68,
+        "perimeter_within_reference_range": false,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.249043,
+          28.604419
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.242,
+              28.605
+            ],
+            [
+              77.252,
+              28.612
+            ],
+            [
+              77.256,
+              28.602
+            ],
+            [
+              77.245,
+              28.598
+            ],
+            [
+              77.242,
+              28.605
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_006",
+          "candidate_name": "Lodhi Garden \u2014 National Zoological Park & Purana Qila Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_009",
+          "candidate_name": "Sunder Nursery & Humayun Greens \u2014 National Zoological Park & Purana Qila Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_010",
+          "candidate_name": "Delhi Golf Club Ecological Sanctuary \u2014 National Zoological Park & Purana Qila Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_012",
+          "candidate_name": "National Zoological Park & Purana Qila Greens \u2014 India Gate Lawns & Central Vista Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        }
+      ]
+    },
+    "patch_007": {
+      "id": "patch_007",
+      "reference_id": "PATCH_008",
+      "name": "Hauz Khas District Park & Deer Park",
+      "osm_type": "park",
+      "reference_metadata": {
+        "name": "Hauz Khas Forest & Lake Complex",
+        "area_ha": 70.0,
+        "area_acres": 173,
+        "area_km2": 0.7,
+        "perimeter_km": {
+          "min": 3.6,
+          "max": 4.0
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 151.35,
+        "stored_area_sqm": 1513498.2,
+        "stored_perimeter_meters": 4977.5,
+        "derived_area_hectares": 151.3498,
+        "derived_area_sqm": 1513498.21,
+        "derived_perimeter_meters": 4977.49,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.0001,
+          "perimeter_difference_pct": 0.0002,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 70.0,
+        "gis_derived_area_ha": 151.3498,
+        "area_difference_ha": 81.3498,
+        "area_difference_pct": 116.21,
+        "reference_perimeter_range_m": [
+          3600.0,
+          4000.0
+        ],
+        "gis_derived_perimeter_m": 4977.49,
+        "perimeter_within_reference_range": false,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.193843,
+          28.547165
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.185,
+              28.548
+            ],
+            [
+              77.198,
+              28.555
+            ],
+            [
+              77.202,
+              28.545
+            ],
+            [
+              77.19,
+              28.54
+            ],
+            [
+              77.185,
+              28.548
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_013",
+          "candidate_name": "Rose Garden & Safdarjung Greens \u2014 Siri Fort Sports Complex & City Forest Corridor",
+          "relationship": "intersecting",
+          "distance_m": 0.0
+        }
+      ]
+    },
+    "patch_008": {
+      "id": "patch_008",
+      "reference_id": null,
+      "name": "Rose Garden & Safdarjung Greens",
+      "osm_type": "park",
+      "reference_metadata": null,
+      "gis_measurements": {
+        "stored_area_hectares": 83.53,
+        "stored_area_sqm": 835326.8,
+        "stored_perimeter_meters": 3783.8,
+        "derived_area_hectares": 83.5327,
+        "derived_area_sqm": 835326.83,
+        "derived_perimeter_meters": 3783.81,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.0032,
+          "perimeter_difference_pct": 0.0003,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": null,
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.205065,
+          28.558307
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.2,
+              28.56
+            ],
+            [
+              77.208,
+              28.565
+            ],
+            [
+              77.21,
+              28.556
+            ],
+            [
+              77.202,
+              28.552
+            ],
+            [
+              77.2,
+              28.56
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_003",
+          "candidate_name": "Nehru Park (Chanakyapuri) \u2014 Rose Garden & Safdarjung Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_013",
+          "candidate_name": "Rose Garden & Safdarjung Greens \u2014 Siri Fort Sports Complex & City Forest Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        }
+      ]
+    },
+    "patch_009": {
+      "id": "patch_009",
+      "reference_id": "PATCH_009",
+      "name": "Siri Fort Sports Complex & City Forest",
+      "osm_type": "forest",
+      "reference_metadata": {
+        "name": "Siri Fort City Forest",
+        "area_ha": 35.0,
+        "area_acres": 86,
+        "area_km2": 0.35,
+        "perimeter_km": {
+          "min": 2.5,
+          "max": 2.8
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 104.16,
+        "stored_area_sqm": 1041579.0,
+        "stored_perimeter_meters": 4233.0,
+        "derived_area_hectares": 104.1579,
+        "derived_area_sqm": 1041579.04,
+        "derived_perimeter_meters": 4233.0,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.002,
+          "perimeter_difference_pct": 0.0,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 35.0,
+        "gis_derived_area_ha": 104.1579,
+        "area_difference_ha": 69.1579,
+        "area_difference_pct": 197.59,
+        "reference_perimeter_range_m": [
+          2500.0,
+          2800.0
+        ],
+        "gis_derived_perimeter_m": 4233.0,
+        "perimeter_within_reference_range": false,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.224083,
+          28.546812
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.218,
+              28.548
+            ],
+            [
+              77.228,
+              28.554
+            ],
+            [
+              77.23,
+              28.545
+            ],
+            [
+              77.22,
+              28.54
+            ],
+            [
+              77.218,
+              28.548
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_013",
+          "candidate_name": "Rose Garden & Safdarjung Greens \u2014 Siri Fort Sports Complex & City Forest Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_014",
+          "candidate_name": "Siri Fort Sports Complex & City Forest \u2014 Jahanpanah City Forest (Northern Fringe) Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        }
+      ]
+    },
+    "patch_010": {
+      "id": "patch_010",
+      "reference_id": "PATCH_011",
+      "name": "Sanjay Van Northern Forest Corridor",
+      "osm_type": "forest",
+      "reference_metadata": {
+        "name": "Sanjay Van",
+        "area_ha": 316.87,
+        "area_acres": 783,
+        "area_km2": 3.17,
+        "perimeter_km": {
+          "min": 8.5,
+          "max": 9.2
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 126.95,
+        "stored_area_sqm": 1269541.1,
+        "stored_perimeter_meters": 4691.3,
+        "derived_area_hectares": 126.9541,
+        "derived_area_sqm": 1269541.1,
+        "derived_perimeter_meters": 4691.28,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.0032,
+          "perimeter_difference_pct": 0.0004,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 316.87,
+        "gis_derived_area_ha": 126.9541,
+        "area_difference_ha": 189.9159,
+        "area_difference_pct": 59.93,
+        "reference_perimeter_range_m": [
+          8500.0,
+          9200.0
+        ],
+        "gis_derived_perimeter_m": 4691.28,
+        "perimeter_within_reference_range": false,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.177692,
+          28.532154
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.17,
+              28.532
+            ],
+            [
+              77.182,
+              28.54
+            ],
+            [
+              77.185,
+              28.531
+            ],
+            [
+              77.173,
+              28.525
+            ],
+            [
+              77.17,
+              28.532
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": []
+    },
+    "patch_011": {
+      "id": "patch_011",
+      "reference_id": "PATCH_005",
+      "name": "India Gate Lawns & Central Vista Greens",
+      "osm_type": "park",
+      "reference_metadata": {
+        "name": "India Gate Lawns & Central Vista Greens",
+        "area_ha": 80.0,
+        "area_acres": 198,
+        "area_km2": 0.8,
+        "perimeter_km": {
+          "min": 4.0,
+          "max": 4.5
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 104.1,
+        "stored_area_sqm": 1040969.0,
+        "stored_perimeter_meters": 4324.1,
+        "derived_area_hectares": 104.0969,
+        "derived_area_sqm": 1040969.0,
+        "derived_perimeter_meters": 4324.12,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.003,
+          "perimeter_difference_pct": 0.0005,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 80.0,
+        "gis_derived_area_ha": 104.0969,
+        "area_difference_ha": 24.0969,
+        "area_difference_pct": 30.12,
+        "reference_perimeter_range_m": [
+          4000.0,
+          4500.0
+        ],
+        "gis_derived_perimeter_m": 4324.12,
+        "perimeter_within_reference_range": true,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.23,
+          28.61
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.222,
+              28.61
+            ],
+            [
+              77.235,
+              28.616
+            ],
+            [
+              77.238,
+              28.61
+            ],
+            [
+              77.225,
+              28.604
+            ],
+            [
+              77.222,
+              28.61
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_007",
+          "candidate_name": "Lodhi Garden \u2014 India Gate Lawns & Central Vista Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_011",
+          "candidate_name": "Delhi Golf Club Ecological Sanctuary \u2014 India Gate Lawns & Central Vista Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        },
+        {
+          "candidate_id": "cand_012",
+          "candidate_name": "National Zoological Park & Purana Qila Greens \u2014 India Gate Lawns & Central Vista Greens Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        }
+      ]
+    },
+    "patch_012": {
+      "id": "patch_012",
+      "reference_id": "PATCH_010",
+      "name": "Jahanpanah City Forest (Northern Fringe)",
+      "osm_type": "forest",
+      "reference_metadata": {
+        "name": "Jahanpanah City Forest",
+        "area_ha": 176.04,
+        "area_acres": 435,
+        "area_km2": 1.76,
+        "perimeter_km": {
+          "min": 6.5,
+          "max": 7.2
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "gis_measurements": {
+        "stored_area_hectares": 116.11,
+        "stored_area_sqm": 1161126.7,
+        "stored_perimeter_meters": 4400.2,
+        "derived_area_hectares": 116.1127,
+        "derived_area_sqm": 1161126.67,
+        "derived_perimeter_meters": 4400.18,
+        "measurement_units": {
+          "area": "hectares and square meters",
+          "perimeter": "meters"
+        },
+        "measurement_crs": "EPSG:32643",
+        "storage_crs": "EPSG:4326",
+        "measurement_verification_status": "geometry_derived_pyproj_utm43n",
+        "discrepancy_analysis": {
+          "area_difference_pct": 0.0023,
+          "perimeter_difference_pct": 0.0005,
+          "consistent": true
+        }
+      },
+      "reference_vs_gis_comparison": {
+        "reference_area_ha": 176.04,
+        "gis_derived_area_ha": 116.1127,
+        "area_difference_ha": 59.9273,
+        "area_difference_pct": 34.04,
+        "reference_perimeter_range_m": [
+          6500.0,
+          7200.0
+        ],
+        "gis_derived_perimeter_m": 4400.18,
+        "perimeter_within_reference_range": false,
+        "potential_explanation": "Different boundary definitions (official vs. OpenStreetMap), composite green-space groupings, or simplified polygons.",
+        "recommended_action": "Investigate boundary source discrepancy if difference exceeds 20%.",
+        "verification_status": "comparison_generated_not_verified"
+      },
+      "geometry_metadata": {
+        "type": "Polygon",
+        "is_valid": true,
+        "storage_crs": "EPSG:4326",
+        "projected_metric_crs": "EPSG:32643",
+        "centroid_wgs84": [
+          77.241854,
+          28.53066
+        ]
+      },
+      "source_provenance": {
+        "primary_source": "OpenStreetMap",
+        "osm_tags": [
+          "leisure=park",
+          "leisure=garden",
+          "landuse=forest",
+          "natural=wood"
+        ],
+        "license": "ODbL 1.0 (c) OpenStreetMap contributors",
+        "boundary_status": "Empirical OpenStreetMap green space boundary; not an official government gazetted forest/revenue boundary."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.235,
+              28.532
+            ],
+            [
+              77.246,
+              28.538
+            ],
+            [
+              77.248,
+              28.528
+            ],
+            [
+              77.238,
+              28.524
+            ],
+            [
+              77.235,
+              28.532
+            ]
+          ]
+        ]
+      },
+      "connected_candidate_corridors": [
+        {
+          "candidate_id": "cand_014",
+          "candidate_name": "Siri Fort Sports Complex & City Forest \u2014 Jahanpanah City Forest (Northern Fringe) Corridor",
+          "relationship": "endpoint",
+          "distance_m": 0.0
+        }
+      ]
+    }
+  },
+  "reference_metadata": {
+    "source_label": "user_supplied_reference",
+    "verification_status": "approximate_unverified",
+    "reference": {
+      "PATCH_001": {
+        "name": "Central Ridge Reserve Forest",
+        "area_ha": 673.32,
+        "area_acres": 1664,
+        "area_km2": 6.73,
+        "perimeter_km": {
+          "min": 14.5,
+          "max": 16.0
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_002": {
+        "name": "Nehru Park (Chanakyapuri)",
+        "area_ha": 32.37,
+        "area_acres": 80,
+        "area_km2": 0.32,
+        "perimeter_km": {
+          "min": 2.3,
+          "max": 2.6
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_003": {
+        "name": "Lodhi Garden",
+        "area_ha": 36.42,
+        "area_acres": 90,
+        "area_km2": 0.36,
+        "perimeter_km": {
+          "min": 2.5,
+          "max": 2.8
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_004": {
+        "name": "Delhi Golf Club Ecological Sanctuary",
+        "area_ha": 89.03,
+        "area_acres": 220,
+        "area_km2": 0.89,
+        "perimeter_km": {
+          "min": 4.2,
+          "max": 4.6
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_005": {
+        "name": "India Gate Lawns & Central Vista Greens",
+        "area_ha": 80.0,
+        "area_acres": 198,
+        "area_km2": 0.8,
+        "perimeter_km": {
+          "min": 4.0,
+          "max": 4.5
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_006": {
+        "name": "National Zoological Park & Purana Qila Greens",
+        "area_ha": 110.0,
+        "area_acres": 272,
+        "area_km2": 1.1,
+        "perimeter_km": {
+          "min": 4.8,
+          "max": 5.2
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_007": {
+        "name": "Sunder Nursery & Humayun Greens",
+        "area_ha": 36.42,
+        "area_acres": 90,
+        "area_km2": 0.36,
+        "perimeter_km": {
+          "min": 2.4,
+          "max": 2.7
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_008": {
+        "name": "Hauz Khas Forest & Lake Complex",
+        "area_ha": 70.0,
+        "area_acres": 173,
+        "area_km2": 0.7,
+        "perimeter_km": {
+          "min": 3.6,
+          "max": 4.0
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_009": {
+        "name": "Siri Fort City Forest",
+        "area_ha": 35.0,
+        "area_acres": 86,
+        "area_km2": 0.35,
+        "perimeter_km": {
+          "min": 2.5,
+          "max": 2.8
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_010": {
+        "name": "Jahanpanah City Forest",
+        "area_ha": 176.04,
+        "area_acres": 435,
+        "area_km2": 1.76,
+        "perimeter_km": {
+          "min": 6.5,
+          "max": 7.2
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_011": {
+        "name": "Sanjay Van",
+        "area_ha": 316.87,
+        "area_acres": 783,
+        "area_km2": 3.17,
+        "perimeter_km": {
+          "min": 8.5,
+          "max": 9.2
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      },
+      "PATCH_012": {
+        "name": "Aravalli Biodiversity Park (Vasant Kunj)",
+        "area_ha": 280.0,
+        "area_acres": 692,
+        "area_km2": 2.8,
+        "perimeter_km": {
+          "min": 7.8,
+          "max": 8.4
+        },
+        "source_label": "user_supplied_reference",
+        "verification_status": "approximate_unverified"
+      }
+    }
+  }
+}
