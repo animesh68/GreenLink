@@ -111,25 +111,37 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onExploreMap }) => {
     [handleNavigate]
   )
 
-  // Sync active navigation tab with user scroll position
+  // Sync active navigation tab with user scroll position using viewport bounds
   useEffect(() => {
     const handleScroll = () => {
-      const scrollY = window.scrollY
       const vh = window.innerHeight
 
-      const aboutEl = document.getElementById('about')
-      const insightsEl = document.getElementById('insights')
       const contactEl = document.getElementById('contact')
+      const insightsEl = document.getElementById('insights')
+      const aboutEl = document.getElementById('about')
 
-      if (contactEl && scrollY >= contactEl.offsetTop - vh * 0.5) {
-        setActiveNavIndex(3)
-      } else if (insightsEl && scrollY >= insightsEl.offsetTop - vh * 0.4) {
-        setActiveNavIndex(2)
-      } else if (aboutEl && scrollY >= aboutEl.offsetTop - vh * 0.4) {
-        setActiveNavIndex(1)
-      } else {
-        setActiveNavIndex(0)
+      if (contactEl) {
+        const rect = contactEl.getBoundingClientRect()
+        if (rect.top <= vh * 0.6) {
+          setActiveNavIndex(3)
+          return
+        }
       }
+      if (insightsEl) {
+        const rect = insightsEl.getBoundingClientRect()
+        if (rect.top <= vh * 0.45 && rect.bottom >= vh * 0.3) {
+          setActiveNavIndex(2)
+          return
+        }
+      }
+      if (aboutEl) {
+        const rect = aboutEl.getBoundingClientRect()
+        if (rect.top <= vh * 0.45 && rect.bottom >= vh * 0.3) {
+          setActiveNavIndex(1)
+          return
+        }
+      }
+      setActiveNavIndex(0)
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })

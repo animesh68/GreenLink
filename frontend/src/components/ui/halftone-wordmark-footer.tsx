@@ -395,7 +395,8 @@ export const HalftoneWordmarkFooter: React.FC<HalftoneWordmarkFooterProps> = ({
           1. MINIMAL UPPER FOOTER BAR
           Sparse, elegant divider: GREENLINK DELHI | Descriptor | CONNECT WITH US | BACK TO TOP ↑
           ========================================================================= */}
-      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-10 sm:pt-14 pb-6">
+      <div className={`relative z-20 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-10 sm:pt-14 pb-6 transition-all duration-700 ease-out ${isIntersecting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 pb-6 border-b border-white/12">
           {/* Left: Project title & short descriptor */}
           <div className="flex flex-col sm:flex-row sm:items-baseline gap-1.5 sm:gap-4">
@@ -441,7 +442,8 @@ export const HalftoneWordmarkFooter: React.FC<HalftoneWordmarkFooterProps> = ({
           2. GIANT HALFTONE WORDMARK CANVAS
           Cropped intentionally at the bottom edge for bold editorial impact
           ========================================================================= */}
-      <div className="relative w-full h-[260px] sm:h-[320px] md:h-[380px] lg:h-[420px] cursor-crosshair">
+      <div className={`relative w-full h-[260px] sm:h-[320px] md:h-[380px] lg:h-[420px] cursor-crosshair transition-opacity duration-1000 ease-out ${isIntersecting ? "opacity-100" : "opacity-40"}`}>
+
         <canvas
           ref={canvasRef}
           onPointerMove={handlePointerMove}

@@ -51,3 +51,5 @@ data/raw/*.xml
 # Local Reference Artifacts
 note_reference*.png
 scroll_animation_reference/
+
+scroll_frames/
