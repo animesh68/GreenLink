@@ -29,7 +29,7 @@ if (-not (Test-Path $frontendNodeModules)) {
 }
 
 # 3. Check and Launch Backend
-$port8000 = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue
+$port8000 = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue
 if ($port8000) {
     Write-Host "[1/3] Port 8000 is already active (PID: $($port8000[0].OwningProcess)). FastAPI backend already running." -ForegroundColor Green
 } else {
@@ -38,7 +38,7 @@ if ($port8000) {
 }
 
 # 4. Check and Launch Frontend
-$port5173 = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue
+$port5173 = Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue
 if ($port5173) {
     Write-Host "[2/3] Port 5173 is already active (PID: $($port5173[0].OwningProcess)). Vite frontend already running." -ForegroundColor Green
 } else {
