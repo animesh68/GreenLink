@@ -53,3 +53,5 @@ note_reference*.png
 scroll_animation_reference/
 
 scroll_frames/
+footer_ref_frames/
+*.zip

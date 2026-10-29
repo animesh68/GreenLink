@@ -131,24 +131,44 @@ export const HalftoneWordmarkFooter: React.FC<HalftoneWordmarkFooterProps> = ({
     offscreen.width = width
     offscreen.height = height
 
-    // Determine font size so GREENLINK spans almost the full viewport width (~94%)
+    // Determine font size so GREENLINK fits comfortably within viewport width (~94%) and available canvas height
     const targetWidth = width * (isMobile ? 0.96 : 0.94)
-    let fontSize = isMobile ? 120 : isTablet ? 180 : 260
-    offCtx.font = `900 ${fontSize}px "Outfit", "Plus Jakarta Sans", -apple-system, sans-serif`
-    let measured = offCtx.measureText(wordmark).width
+    const verticalPadding = isMobile ? 8 : isTablet ? 12 : 16
+    const availableHeight = height - verticalPadding * 2
 
-    if (measured > 0) {
-      fontSize = (targetWidth / measured) * fontSize
+    let fontSize = isMobile ? 80 : isTablet ? 130 : 200
+    offCtx.font = `900 ${fontSize}px "Outfit", "Plus Jakarta Sans", -apple-system, sans-serif`
+    let measuredWidth = offCtx.measureText(wordmark).width
+
+    if (measuredWidth > 0) {
+      fontSize = (targetWidth / measuredWidth) * fontSize
       offCtx.font = `900 ${fontSize}px "Outfit", "Plus Jakarta Sans", -apple-system, sans-serif`
     }
+
+    // Measure actual rendered text height and scale down if it exceeds available height so it never clips vertically
+    const metrics = offCtx.measureText(wordmark)
+    const actualAscent = metrics.actualBoundingBoxAscent || fontSize * 0.72
+    const actualDescent = metrics.actualBoundingBoxDescent || fontSize * 0.2
+    const textHeight = actualAscent + actualDescent
+
+    if (textHeight > availableHeight && textHeight > 0) {
+      const heightScale = availableHeight / textHeight
+      fontSize = fontSize * heightScale
+      offCtx.font = `900 ${fontSize}px "Outfit", "Plus Jakarta Sans", -apple-system, sans-serif`
+    }
+
+    const finalMetrics = offCtx.measureText(wordmark)
+    const finalAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.72
+    const finalDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.2
+    const finalHeight = finalAscent + finalDescent
 
     offCtx.fillStyle = '#FFFFFF'
     offCtx.textBaseline = 'alphabetic'
     offCtx.textAlign = 'center'
 
-    // Position wordmark close to bottom edge, with the bottom portion intentionally cropped
-    // This reproduces the bold Halden-style editorial crop
-    const baselineY = height + fontSize * (isMobile ? 0.12 : 0.15)
+    // Center wordmark vertically in the canvas so it sits directly below the top row with zero wasted gap
+    const topOffset = Math.max((height - finalHeight) / 2, verticalPadding)
+    const baselineY = topOffset + finalAscent
     offCtx.fillText(wordmark, width / 2, baselineY)
 
     const imgData = offCtx.getImageData(0, 0, width, height)
@@ -395,9 +415,9 @@ export const HalftoneWordmarkFooter: React.FC<HalftoneWordmarkFooterProps> = ({
           1. MINIMAL UPPER FOOTER BAR
           Sparse, elegant divider: GREENLINK DELHI | Descriptor | CONNECT WITH US | BACK TO TOP ↑
           ========================================================================= */}
-      <div className={`relative z-20 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-10 sm:pt-14 pb-6 transition-all duration-700 ease-out ${isIntersecting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+      <div className={`relative z-20 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-7 sm:pt-9 pb-1 sm:pb-2 transition-all duration-700 ease-out ${isIntersecting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 pb-6 border-b border-white/12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 md:gap-6 pb-4 sm:pb-5 border-b border-white/12">
           {/* Left: Project title & short descriptor */}
           <div className="flex flex-col sm:flex-row sm:items-baseline gap-1.5 sm:gap-4">
             <span className="text-xs sm:text-sm font-bold tracking-widest uppercase text-white font-headline">
@@ -409,19 +429,23 @@ export const HalftoneWordmarkFooter: React.FC<HalftoneWordmarkFooterProps> = ({
           </div>
 
           {/* Right cluster: Connect with Us + Back to top */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 lg:gap-8">
-            {/* Connect with Us & email */}
-            <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 lg:gap-8">
+            {/* Connect with Us & email & handle */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
               <span className="text-xs sm:text-sm font-bold tracking-widest uppercase text-white/70 font-headline">
                 CONNECT WITH US
               </span>
-              <a
-                href="mailto:animeshyt68@gmail.com"
-                className="text-xs sm:text-sm font-medium text-white/80 hover:text-[#8BE35A] transition-colors font-editorial-sans"
-                aria-label="Email animeshyt68@gmail.com"
-              >
-                animeshyt68@gmail.com
-              </a>
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-editorial-sans">
+                <a
+                  href="mailto:animeshyt68@gmail.com"
+                  className="font-medium text-white/80 hover:text-[#8BE35A] transition-colors"
+                  aria-label="Email animeshyt68@gmail.com"
+                >
+                  animeshyt68@gmail.com
+                </a>
+                <span className="text-white/30">•</span>
+                <span className="text-white/60 font-medium">@goodwillcoding</span>
+              </div>
             </div>
 
             {/* Minimal BACK TO TOP link */}
@@ -440,9 +464,9 @@ export const HalftoneWordmarkFooter: React.FC<HalftoneWordmarkFooterProps> = ({
 
       {/* =========================================================================
           2. GIANT HALFTONE WORDMARK CANVAS
-          Cropped intentionally at the bottom edge for bold editorial impact
+          Tightly aligned directly below the navigation row with balanced natural padding
           ========================================================================= */}
-      <div className={`relative w-full h-[260px] sm:h-[320px] md:h-[380px] lg:h-[420px] cursor-crosshair transition-opacity duration-1000 ease-out ${isIntersecting ? "opacity-100" : "opacity-40"}`}>
+      <div className={`relative w-full h-[95px] sm:h-[135px] md:h-[185px] lg:h-[235px] xl:h-[265px] pb-2 sm:pb-3 cursor-crosshair transition-opacity duration-1000 ease-out ${isIntersecting ? "opacity-100" : "opacity-40"}`}>
 
         <canvas
           ref={canvasRef}

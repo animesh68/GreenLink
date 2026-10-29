@@ -303,7 +303,7 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ onExploreMap }
             }`}
           >
             {/* Metric 1: Geographic Extent */}
-            <div className="relative overflow-hidden rounded-2xl bg-[#0A1F18]/70 backdrop-blur-md border border-white/15 p-5 sm:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.35)] flex flex-col justify-between group hover:border-[#B7F34A]/40 transition-colors">
+            <div className="insights-card insights-metric-card relative overflow-hidden rounded-2xl bg-[#0A1F18]/70 backdrop-blur-md border border-white/15 p-5 sm:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.35)] flex flex-col justify-between group">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs uppercase tracking-wider text-white/60 font-medium">Study Extent</span>
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-[#B7F34A] flex items-center justify-center">
@@ -322,7 +322,7 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ onExploreMap }
             </div>
 
             {/* Metric 2: Mapped Green Anchors */}
-            <div className="relative overflow-hidden rounded-2xl bg-[#0A1F18]/70 backdrop-blur-md border border-white/15 p-5 sm:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.35)] flex flex-col justify-between group hover:border-[#B7F34A]/40 transition-colors">
+            <div className="insights-card insights-metric-card relative overflow-hidden rounded-2xl bg-[#0A1F18]/70 backdrop-blur-md border border-white/15 p-5 sm:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.35)] flex flex-col justify-between group">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs uppercase tracking-wider text-white/60 font-medium">Green Anchors</span>
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-[#B7F34A] flex items-center justify-center">
@@ -341,7 +341,7 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ onExploreMap }
             </div>
 
             {/* Metric 3: Candidate Corridors */}
-            <div className="relative overflow-hidden rounded-2xl bg-[#0A1F18]/70 backdrop-blur-md border border-white/15 p-5 sm:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.35)] flex flex-col justify-between group hover:border-[#B7F34A]/40 transition-colors">
+            <div className="insights-card insights-metric-card relative overflow-hidden rounded-2xl bg-[#0A1F18]/70 backdrop-blur-md border border-white/15 p-5 sm:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.35)] flex flex-col justify-between group">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs uppercase tracking-wider text-white/60 font-medium">Candidate Network</span>
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-[#B7F34A] flex items-center justify-center">
@@ -393,7 +393,7 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ onExploreMap }
             {/* Side-by-Side Explanatory Cards Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-5">
               {/* Objective 1: Connectivity-First */}
-              <div className="relative rounded-2xl bg-gradient-to-b from-emerald-950/40 to-[#0A1F18]/85 border border-emerald-500/30 p-5 sm:p-6 flex flex-col justify-between">
+              <div className="insights-card insights-connectivity-card relative rounded-2xl bg-gradient-to-b from-emerald-950/40 to-[#0A1F18]/85 border border-emerald-500/30 p-5 sm:p-6 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-semibold uppercase tracking-wider">
@@ -446,7 +446,7 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ onExploreMap }
               </div>
 
               {/* Objective 2: Heat-Priority-First */}
-              <div className="relative rounded-2xl bg-gradient-to-b from-amber-950/30 to-[#0A1F18]/85 border border-amber-500/30 p-5 sm:p-6 flex flex-col justify-between">
+              <div className="insights-card insights-heat-card relative rounded-2xl bg-gradient-to-b from-amber-950/30 to-[#0A1F18]/85 border border-amber-500/30 p-5 sm:p-6 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-300 text-xs font-semibold uppercase tracking-wider">
